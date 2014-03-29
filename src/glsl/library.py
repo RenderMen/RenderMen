@@ -1,11 +1,16 @@
 
+import math
+
 import utils
 import primitives
 import material
+import glsl_math
+
 
 # ------------------------------------------------------------------------------ GLSL HEADER
 
-glsl_header = """
+def glsl_header():
+    code_tmplt = """
 
 #version 100
 
@@ -13,8 +18,13 @@ precision highp float;
 
 #define MATH_FAR 10000.0
 #define MATH_EPSILON 0.0001
+#define MATH_PI {math_pi}
 
-"""
+    """
+
+    return code_tmplt.format(
+        math_pi=math.pi
+    )
 
 
 # ------------------------------------------------------------------------------ GLSL GLOBAL RAY
@@ -149,11 +159,14 @@ main()
 def main(scene):
     glsl_code = ""
 
-    glsl_code += glsl_header
+    glsl_code += glsl_header()
     glsl_code += glsl_global_ray
     glsl_code += glsl_global_attrs
+
+    glsl_code += glsl_math.glsl_code
     glsl_code += material.glsl_code
     glsl_code += primitives.glsl_code
+
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
     glsl_code += glsl_main(scene)
