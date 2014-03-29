@@ -9,12 +9,12 @@ glsl_code = """
 void
 material_albedo(vec3 albedo)
 {
-    ray_color = vec3(0.1);
-
     mat3 tbn = generate_basis(attr_normal);
     vec3 half_sphere = random_half_sphere();
 
     vec3 new_ray_dir = tbn * half_sphere;
+
+    ray_color = albedo;
 
     ray_continue(new_ray_dir);
 }

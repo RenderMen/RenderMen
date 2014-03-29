@@ -19,15 +19,15 @@ noise3D(vec3 v)
     return fract(sin(dot(v.xyz, vec3(12.9898, 78.233, 42.5487))) * 43758.5453);
 }
 
-float
+int
 random_seed;
 
 float
 random()
 {
-    random_seed += 1.0;
+    random_seed += 1;
 
-    return noise1D(random_seed);
+    return noise1D(float(random_seed));
 }
 
 vec3
@@ -43,7 +43,15 @@ random_half_sphere()
 mat3
 generate_basis(vec3 z)
 {
-    vec3 x = normalize(cross(z, vec3(0.0, 0.0, 1.0)));
+    if (abs(z.x) > 0.0)
+    {
+        vec3 x = normalize(vec3(-z.y, z.x, 0.0));
+        vec3 y = cross(z, x);
+
+        return mat3(x, y, z);
+    }
+
+    vec3 x = normalize(vec3(0.0, -z.z, z.y));
     vec3 y = cross(z, x);
 
     return mat3(x, y, z);

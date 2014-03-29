@@ -43,22 +43,23 @@ ray_color;
 float
 ray_intersection_dist;
 
-int
-ray_next_iteration;
-
 vec3
 attr_pos;
 
 vec3
 attr_normal;
 
+int
+ray_next_iteration;
+
+vec3
+ray_next_dir;
+
 
 void
 ray_continue(vec3 dir)
 {
-    ray_origin = attr_pos + dir * MATH_EPSILON;
-    ray_dir = dir;
-
+    ray_next_dir = dir;
     ray_next_iteration = 1;
 }
 
@@ -78,6 +79,8 @@ def glsl_intersect(scene):
 void
 ray_intersect()
 {{
+    int seed = random_seed;
+
     {code_content}
 }}
     """
@@ -88,6 +91,7 @@ ray_intersect()
         code_tmplt_prim = """
     if ({intersect_call} == 1)
     {{
+        random_seed = seed;
         {material_code}
     }}
         """
@@ -124,15 +128,18 @@ ray_launch(vec3 origin, vec3 dir)
 
         frag_color *= ray_color;
 
+        if (abs(ray_intersection_dist - MATH_FAR) < MATH_EPSILON)
+        {
+            break;
+        }
+
         if (ray_next_iteration == 0)
         {
             return frag_color;
         }
 
-        if (ray_intersection_dist == MATH_FAR)
-        {
-            return frag_color;
-        }
+        ray_dir = ray_next_dir;
+        ray_origin = attr_pos + ray_dir * MATH_EPSILON;
     }
 
     return vec3(0.0);
@@ -156,7 +163,7 @@ uniform float sample_id;
 void
 main()
 {{
-    random_seed = noise3D(vec3(position.x, position.y, sample_id));
+    random_seed = int(noise3D(vec3(position.x, position.y, sample_id)) * 18723.0);
 
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};

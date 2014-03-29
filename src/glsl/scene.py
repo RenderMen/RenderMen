@@ -33,16 +33,24 @@ def boiler_scene():
     s.camera.direction = utils.normalize(utils.sub([0.0, 0.0, 0.0], s.camera.position))
 
     #s.add(primitives.Sphere(material=material.Emit(color=[0.5, 0.5, 1.0])))
-    s.add(primitives.Sphere(center=[0.0, 0.0, 1.0], radius=1.0))
+    s.add(primitives.Sphere(center=[0.0, 0.0, 1.0], radius=1.0, material=material.Emit(color=[3.0, 3.0, 3.0])))
 
-    s.add(primitives.Plan(normal=[-1.0, 0.0, 0.0], distance=5.0))  # X+
-    s.add(primitives.Plan(normal=[1.0, 0.0, 0.0], distance=-5.0))  # X-
+    s.add(primitives.Plan(
+        normal=[-1.0, 0.0, 0.0],
+        distance=5.0,
+        material=material.Diffuse(albedo=[0.75, 0.25, 0.25]))
+    )  # X+
+    s.add(primitives.Plan(
+        normal=[1.0, 0.0, 0.0],
+        distance=-5.0,
+        material=material.Diffuse(albedo=[0.25, 0.25, 0.75]))
+    )  # X-
 
-    s.add(primitives.Plan(normal=[0.0, -1.0, 0.0], distance=5.0))  # Y+
-    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=-5.0))  # Y-
+    s.add(primitives.Plan(normal=[0.0, -1.0, 0.0], distance=5.0, material=material.Diffuse()))  # Y+
+    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=-5.0, material=material.Diffuse()))  # Y-
 
-    s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0)) # Z+
-    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0))   # Z-
+    s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0, material=material.Diffuse())) # Z+
+    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Diffuse()))   # Z-
 
     return s
 
