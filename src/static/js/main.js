@@ -14,24 +14,36 @@ function apiCall(path, method, params, callback) {
     request.success(callback);
 }
 
-require(["shader", "fullscreen"]);
-function main()
-{
-    var canvas = document.getElementById("renderCanvas");
+function getGLContext() {
+
+   var canvas = document.getElementById("renderCanvas");
 
     var gl = canvas.getContext("experimental-webgl");
 
     if(!gl) // WebGL not supported
     {
         console.log("WebGL not supported");
-        return false;
+        return null;
     }
 
+    return gl;
+}
+
+function main() {
+    gl = getGLContext();
+    assert(gl, "Failed to get WebGL context");
+
+    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var fullscreenBuffer = createFullscreenBuffer(gl);
+
     // Global fullscreen program
-    fullscreenProgram = createProgram(gl, fullscreenVertexShader, fullscreenFragmentShader);
+    var fullscreenProgram = createProgram(gl, fullscreenVertexShader, fullscreenFragmentShader);
 
     // Global framebuffer
-    fbo = createFramebuffer(gl);
+    var fbo = createFramebuffer(gl);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
     // Set viewport
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -43,20 +55,26 @@ function main()
 
     gl.useProgram(fullscreenProgram);
 
-    var fullscreenBuffer = createFullscreenBuffer(gl);
-
     gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 8, 0);
-
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
+function testGetShader() {
+    gl = getGLContext();
+    assert(gl, "Failed to get WebGL context");
+
+    apiCall('api/shader', 'GET', {}, function(data) {
+        fragmentShader = data.responseText;
+        fullscreenProgram = createProgram(gl, fullscreenVertexShader, fragmentShader);
+    });
 }
 
 // Main
 $(document).ready(function() {
     // Main WebGL-related stuff
     main();
-
     // Configures login dropdown menu
     $('.dropdown-menu').click(function(event) {
       event.stopPropagation();
@@ -72,4 +90,6 @@ $(document).ready(function() {
       });
 
     });
+
+    //testGetShader();
 });

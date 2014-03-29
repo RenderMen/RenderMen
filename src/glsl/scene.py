@@ -24,9 +24,14 @@ class Scene:
     def composeGLSL(self):
         return library.main(self)
 
-if __name__ == "__main__":
+def boiler_scene():
     s = Scene()
     s.add(primitives.Sphere())
+
+    return s
+
+if __name__ == "__main__":
+    s = boiler_scene()
 
     glsl = s.composeGLSL()
 
