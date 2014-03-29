@@ -38,6 +38,23 @@ $(document).ready(function() {
 
     });
 
+    // Signup btn
+    $('#signup-btn').click(function(e) {
+      var email = $('#signup-email').val();
+      var username = $('#signup-username').val();
+      var password = $('#signup-password').val();
+
+      apiCall('/api/signup', 'POST', {email: email, username:username, password: password}, function(data) {
+        if (!data.ok) {
+            $.notify("Invalid sign-up information. Please try again !", 'error');
+            return;
+        }
+
+        // Redirecting the user to the frontpage
+        window.location.replace('/');
+      });
+
+    });
     // Logout link
     $('a.logout').click(function() {
       apiCall('/api/logout', 'POST', {}, function(data) {
