@@ -7,6 +7,9 @@ from flask import Flask, render_template, session, request, jsonify
 import config
 from model.user import User, hash_password
 
+from glsl.scene import Scene
+
+
 # Flask app
 app = Flask(__name__)
 
@@ -16,19 +19,16 @@ User.drop_collection()
 dummy = User.new_user('test@test.com', 'password')
 dummy.save()
 
+# GLSL init
+glsl_scene = Scene()
+
 @app.route("/")
 def hello():
     return render_template('index.html')
 
 @app.route("/api/shader")
 def api_shader():
-    code = """
-    void main()
-    {
-        gl_FragColor = vec4(0.4,0.4,0.8,1.0);
-    }
-    """
-    return code
+    return glsl_scene.composeGLSL()
 
 @app.route("/api/signin")
 def api_connect():
