@@ -23,10 +23,10 @@ class Scene(mongoengine.Document):
         camera = Camera()
         primitives = [primitives.Sphere]
     """
-    # title = mongoengine.StringField(primary_key=True)
-    # description = mongoengine.StringField(default=None)
-    # created_by = mongoengine.ReferenceField(User, required=True)
-    # creation_time = mongoengine.DateTimeField(default=datetime.now)
+    title = mongoengine.StringField(primary_key=True)
+    description = mongoengine.StringField(default=None)
+    created_by = mongoengine.ReferenceField(User, required=True)
+    creation_time = mongoengine.DateTimeField(default=datetime.now)
 
     camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
     primitives = mongoengine.ListField(mongoengine.ReferenceField(primitives.Abstract), default=list)
@@ -43,8 +43,8 @@ class Scene(mongoengine.Document):
     def composeGLSL(self):
         return library.main(self)
 
-def boiler_scene():
-    s = Scene()
+def boiler_scene(user):
+    s = Scene(created_by=user, title="Dummy Scene", description="Just a random dummy scene")
     s.camera.position[0] = -3
     s.camera.position[1] = -3
     s.camera.position[2] = 3
@@ -66,7 +66,7 @@ def boiler_scene():
     return s
 
 if __name__ == "__main__":
-    s = boiler_scene()
+    s = boiler_scene(user=None)
 
     glsl = s.composeGLSL()
 

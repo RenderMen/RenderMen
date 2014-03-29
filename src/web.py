@@ -23,7 +23,7 @@ dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
 dummy.save()
 
 # GLSL init
-glsl_scene = boiler_scene()
+glsl_scene = boiler_scene(dummy)
 glsl_scene.save()
 
 def requires_login(f):
