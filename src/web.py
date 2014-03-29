@@ -8,7 +8,7 @@ from flask import Flask, render_template, session, request, jsonify, g, redirect
 import config
 from model.user import User, hash_password
 
-from glsl.scene import Scene, boiler_scene
+from glsl.scene import Rendering, Scene, boiler_scene
 
 
 # Flask app
@@ -16,9 +16,8 @@ app = Flask(__name__)
 app.secret_key = config.session_secret_key
 
 # DB init
-mongoengine.connect(config.db_name)
-User.drop_collection()
-Scene.drop_collection()
+db = mongoengine.connect(config.db_name)
+db.drop_database(config.db_name)
 dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
 dummy.save()
 
@@ -29,6 +28,8 @@ glsl_scene.save()
 another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
 another_glsl_scene.save()
 
+Rendering(width=600, height=400, samples=16, scene=glsl_scene).save()
+Rendering(width=600, height=400, samples=16, scene=another_glsl_scene).save()
 
 def requires_login(f):
     @wraps(f)
@@ -58,7 +59,8 @@ def hello():
 @requires_login
 def profile():
     scenes = Scene.objects(created_by=g.user)
-    return render_template('profile.html', scenes=scenes)
+    renderings = Rendering.objects(scene__in=scenes)
+    return render_template('profile.html', renderings=renderings)
 
 @app.route("/add_scene")
 @requires_login
