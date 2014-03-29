@@ -39,19 +39,38 @@ intersect_sphere(vec4 sphere)
 
 class Abstract:
 
-    def glsl(self):
+    def intersect_call(self):
         assert False
+
+    def material_code(self):
+        assert False
+
+
+# ------------------------------------------------------------------------------ ABSTRACT MATERIAL CLASS
+
+class AbstractMaterial:
+
+    def __init__(self, material=None):
+        self.material = material
+
+    def material_code(self):
+        if self.material == None:
+            return "ray_color = 0.5 * attr_normal + 0.5;"
+
+        return self.material.code()
 
 
 # ------------------------------------------------------------------------------ SPHERE CLASS
 
-class Sphere(Abstract):
+class Sphere(AbstractMaterial):
     """
         center = vec3
         radius = float
     """
 
-    def __init__(self, center = [0.0, 0.0, 0.0], radius = 1.0):
+    def __init__(self, material=None, center=[0.0, 0.0, 0.0], radius=1.0):
+        AbstractMaterial.__init__(self, material=material)
+
         self.center = center
         self.radius = radius
 
@@ -59,7 +78,7 @@ class Sphere(Abstract):
     def vec4(self):
         return [self.center[0], self.center[1], self.center[2], self.radius]
 
-    def glsl(self):
+    def intersect_call(self):
         code_tmplt = "intersect_sphere({sphere})"
 
         return code_tmplt.format(

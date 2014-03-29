@@ -2,6 +2,7 @@
 import math
 import camera
 import primitives
+import material
 import library
 
 
@@ -27,7 +28,7 @@ class Scene:
 def boiler_scene():
     s = Scene()
     s.camera.position[1] = -3
-    s.add(primitives.Sphere())
+    s.add(primitives.Sphere(material=material.Emit(color=[0.5, 0.5, 1.0])))
 
     return s
 
