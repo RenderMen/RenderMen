@@ -15,17 +15,24 @@ function apiCall(path, method, params, callback) {
 
 }
 
-function main()
-{
-    var canvas = document.getElementById("renderCanvas");
+function getGLContext() {
+
+   var canvas = document.getElementById("renderCanvas");
 
     var gl = canvas.getContext("experimental-webgl");
 
     if(!gl) // WebGL not supported
     {
         console.log("WebGL not supported");
-        return false;
+        return null;
     }
+
+    return gl;
+}
+
+function main() {
+    gl = getGLContext();
+    assert(gl, "Failed to get WebGL context");
 
     // Global fullscreen program
     fullscreenProgram = createProgram(gl, fullscreenVertexShader, fullscreenFragmentShader);
@@ -52,7 +59,19 @@ function main()
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
+function testGetShader() {
+    gl = getGLContext();
+    assert(gl, "Failed to get WebGL context");
+
+    apiCall('api/shader', 'GET', {}, function(data) {
+        fragmentShader = data.responseText;
+        console.log(fragmentShader);
+        //fullscreenProgram = createProgram(gl, fullscreenVertexShader, fragmentShader);
+    });
+}
+
 // Main
 $(document).ready(function() {
-    main();
+    //main();
+    testGetShader();
 });
