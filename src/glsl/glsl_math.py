@@ -19,15 +19,15 @@ noise3D(vec3 v)
     return fract(sin(dot(v.xyz, vec3(12.9898, 78.233, 42.5487))) * 43758.5453);
 }
 
-int
+float
 random_seed;
 
 float
 random()
 {
-    random_seed += 1;
+    random_seed += 1.0;
 
-    return noise1D(float(random_seed));
+    return noise1D(random_seed);
 }
 
 vec3

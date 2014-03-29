@@ -79,7 +79,7 @@ def glsl_intersect(scene):
 void
 ray_intersect()
 {{
-    int seed = random_seed;
+    float seed = random_seed;
 
     {code_content}
 }}
@@ -163,7 +163,7 @@ uniform float sample_id;
 void
 main()
 {{
-    random_seed = int(noise3D(vec3(position.x, position.y, sample_id)) * 18723.0);
+    random_seed = noise3D(vec3(position.x, position.y, sample_id)) * 187.0;
 
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
