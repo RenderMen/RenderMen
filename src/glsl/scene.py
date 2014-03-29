@@ -62,6 +62,10 @@ class Assignment(mongoengine.Document):
 
     pixels = mongoengine.ListField()
 
+    def save(self, *args, **kwargs):
+        self.rendering.save()
+        super(Assignment, self).save(*args, **kwargs)
+
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
@@ -75,20 +79,13 @@ class Rendering(mongoengine.Document):
     def get_assignment(self):
         assert len(self.assignments) != 0
 
-        for assignment in self.assignments:
+        for assignment in Assignment.objects(rendering=self):
             if assignment.status != Assignment.UNASSIGNED:
                 continue
 
             return assignment
 
         return None
-
-    def save(self, *args, **kwargs):
-        for assignment in self.assignments:
-            assignment.save()
-
-        super(Rendering, self).save(*args, **kwargs)
-
 
     @staticmethod
     def create(scene, width, height, samples):
@@ -123,14 +120,10 @@ class Rendering(mongoengine.Document):
                 width=a_width,
                 height=a_height,
                 samples=samples,
-<<<<<<< HEAD
-                rendering=rendering
-=======
+                rendering=r,
                 rendering_author=r.scene.created_by
->>>>>>> dev
             )
-
-            r.assignments.append(a)
+            a.save()
 
         return r
 
