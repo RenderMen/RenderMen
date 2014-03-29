@@ -1,5 +1,49 @@
 
-class Sphere:
+import utils
+
+
+# ------------------------------------------------------------------------------ GLSL SPHERE
+
+glsl_code = """
+
+int
+intersect_sphere(vec4 sphere)
+{
+    vec3 oc = sphere.xyz - ray_origin;
+
+    float b = dot(oc, ray_dir);
+    float det = b * b - dot(oc, oc) + sphere.w * sphere.w;
+
+    if (det <= 0.0)
+    {
+        return 0;
+    }
+
+    float distance = b - sqrt(det);
+
+    if ((distance > MATH_EPSILON) && (distance < ray_intersection_dist))
+    {
+        ray_intersection_dist = distance;
+        return 1;
+    }
+
+    return 0;
+}
+
+"""
+
+
+# ------------------------------------------------------------------------------ ABSTRACT CLASS
+
+class Abstract:
+
+    def glsl(self):
+        assert False
+
+
+# ------------------------------------------------------------------------------ SPHERE CLASS
+
+class Sphere(Abstract):
     """
         center = vec3
         radius = float
@@ -12,3 +56,10 @@ class Sphere:
     @property
     def vec4(self):
         return [self.center[0], self.center[1], self.center[2], self.radius]
+
+    def glsl(self):
+        code_tmplt = "intersect_sphere({sphere})"
+
+        return code_tmplt.format(
+            sphere=utils.code_vec(self.vec4)
+        )
