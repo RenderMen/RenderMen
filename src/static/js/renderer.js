@@ -33,9 +33,10 @@ GLContext.prototype.height = function() {
     return this.context.drawingBufferHeight;
 }
 
-GLContext.prototype.processAssignment = function(assigment, shaderCode) {
-    this.canvas.width = parseInt(assigment["width"]);
-    this.canvas.height = parseInt(assigment["height"]);
+GLContext.prototype.processAssignment = function(assignment, shaderCode) {
+    this.canvas.width = parseInt(assignment["width"]);
+    this.canvas.height = parseInt(assignment["height"]);
+    this.canvas.style =  'margin-left: ' + assignment.x + 'px;' + ' margin-top: ' + assignment.y + 'px;';
 
     var gl = this.context;
 
@@ -43,7 +44,7 @@ GLContext.prototype.processAssignment = function(assigment, shaderCode) {
     gl.viewport(0, 0, this.width(), this.height());
 
     var program = createProgram(this.context, fullscreenVertexShader, data.result);
-    var texture = this.rayTrace(assigment, program);
+    var texture = this.rayTrace(assignment, program);
 
     this.drawFullscreenQuad(texture);
 }
@@ -69,7 +70,7 @@ GLContext.prototype.drawFullscreenQuad = function(texture) {
 };
 
 // Draw into the glContext framebuffer nbSamples times using the given program
-GLContext.prototype.rayTrace = function(assigment, program) {
+GLContext.prototype.rayTrace = function(assignment, program) {
     var gl = glContext.context;
 
     texture = gl.createTexture();
@@ -129,7 +130,7 @@ GLContext.prototype.rayTrace = function(assigment, program) {
     var sampleId = gl.getUniformLocation(program, "sample_id");
     assert(sampleId != -1, "Invalid location of uniform \"sample_id\"");
 
-    var samples = parseInt(assigment["samples"]);
+    var samples = parseInt(assignment["samples"]);
 
     //>>> Send attributes
     gl.enableVertexAttribArray(vertexLoc);
