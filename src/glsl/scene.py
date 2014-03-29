@@ -9,6 +9,8 @@ import primitives
 import material
 import library
 import utils
+import datetime
+import config
 
 
 from datetime import datetime
@@ -44,12 +46,85 @@ class Scene(mongoengine.Document):
     def composeGLSL(self):
         return library.main(self)
 
+
+class Assigment(mongoengine.Document):
+    x = mongoengine.IntField(required=True)
+    y = mongoengine.IntField(required=True)
+    width = mongoengine.IntField(required=True)
+    height = mongoengine.IntField(required=True)
+    samples = mongoengine.IntField(required=True)
+    date = mongoengine.DateTimeField()
+    status = mongoengine.StringField(default="unassigned")
+
+
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
     samples = mongoengine.IntField(required=True)
 
     scene = mongoengine.ReferenceField(Scene)
+
+    assignments = mongoengine.ListField(mongoengine.DateTimeField(), default=list)
+
+    def get_assignment(self):
+        assert len(self.assignments) != 0
+
+        current = datetime.datetime.now()
+
+        for assignment in self.assignments:
+            if assignment.status != "unassigned":
+                continue
+
+            return assignment
+
+        return None
+
+    def save(self, *args, **kwargs):
+        for assignment in self.assignments:
+            assignment.save()
+
+        super(Rendering, self).save(*args, **kwargs)
+
+
+    @staticmethod
+    def create(scene, width, height, samples):
+        assert width != 0
+        assert height != 0
+        assert samples != 0
+
+        r = Rendering(width=width, height=height, samples=samples, scene=scene)
+
+        count_width = int(math.ceil(float(width) / float(config.assigment_size)))
+        count_height = int(math.ceil(float(height) / float(config.assigment_size)))
+        count = count_width * count_height
+
+        assert count != 0
+
+        for i in range(0, count):
+            x = config.assigment_size * (i % count_width)
+            y = config.assigment_size * (i / count_width)
+
+            assert x < width
+            assert y < height
+
+            a_width = min(config.assigment_size, width - x)
+            a_height = min(config.assigment_size, height - y)
+
+            assert a_width < width
+            assert a_height < height
+
+            a = Assigment(
+                x=x,
+                y=y,
+                width=a_width,
+                height=a_height,
+                samples=samples
+            )
+
+            r.assignments.append(a)
+
+        return r
+
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)
