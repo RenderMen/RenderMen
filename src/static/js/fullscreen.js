@@ -21,7 +21,7 @@ main() \
 } \
 ";
 
-function fullscreenBuffer(gl)
+function createFullscreenBuffer(gl)
 {
     assert(gl, "Invalid WebGL context");
 
@@ -44,17 +44,19 @@ function fullscreenBuffer(gl)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexArray), gl.STATIC_DRAW);
-    gl.binBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     return buffer;
 }
 
 // Creates a framebuffer with a single color attachment
-function createFrameBuffer(gl)
+function createFramebuffer(gl)
 {
     assert(gl, "Invalid WebGL context");
 
-    var fullscreenBuffer = fullScreenBuffer(gl);
+    assert(gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
+
+    var textureType = gl.FLOAT;
 
     var colorTarget = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, colorTarget);
@@ -62,7 +64,8 @@ function createFrameBuffer(gl)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth, gl.drawingBufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth,
+        gl.drawingBufferHeight, 0, gl.RGBA, textureType, null);
 
     var fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
