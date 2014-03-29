@@ -88,16 +88,21 @@ void
 main()
 {{
     vec3 camera_origin = {camera_origin};
-    vec3 dir = vec(0.0, 1.0, 0.0);
+    vec3 camera_dir = {camera_dir};
+    float camera_fill_of_view = {camera_fill_of_view};
 
-    gl_FragColor = vec4(ray_launch(origin, dir), 1.0);
+    vec3 ray_color = ray_launch(camera_origin, camera_dir);
+
+    gl_FragColor = vec4(ray_color, 1.0);
 }}
 
 """
 
-    camera_origin = utils.code_vec(scene.camera.position)
-
-    return code_tmplt.format(camera_origin=camera_origin)
+    return code_tmplt.format(
+        camera_origin=utils.code_vec(scene.camera.position),
+        camera_dir=utils.code_vec(scene.camera.direction),
+        camera_fill_of_view=scene.camera.fill_of_view
+    )
 
 
 # ------------------------------------------------------------------------------ MAIN
