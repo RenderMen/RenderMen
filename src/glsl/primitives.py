@@ -23,6 +23,7 @@ intersect_sphere(vec4 sphere)
 
     if ((distance > MATH_EPSILON) && (distance < ray_intersection_dist))
     {
+        ray_intersection_dist = distance;
         attr_pos = ray_origin + distance * ray_dir;
         attr_normal = normalize(attr_pos - sphere.xyz);
 

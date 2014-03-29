@@ -25,7 +25,7 @@ class Abstract:
 
 # ------------------------------------------------------------------------------ EMIT MATERIAL
 
-class Emit:
+class Emit(Abstract):
 
     def __init__(self, color=[0.8, 0.8, 0.8]):
         self.color = color
@@ -39,7 +39,7 @@ class Emit:
 
 # ------------------------------------------------------------------------------ DIFFUSE MATERIAL
 
-class Diffuse:
+class Diffuse(Abstract):
 
     def __init__(self, albedo=[0.8, 0.8, 0.8]):
         self.albedo = albedo
