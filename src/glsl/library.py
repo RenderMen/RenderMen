@@ -1,6 +1,7 @@
 
 import utils
 import primitives
+import material
 
 # ------------------------------------------------------------------------------ GLSL HEADER
 
@@ -63,14 +64,15 @@ ray_intersect()
 
     for prim in scene.primitives:
         code_tmplt_prim = """
-    if ({glsl} == 1)
+    if ({intersect_call} == 1)
     {{
-        ray_color = attr_normal * 0.5 + 0.5;
+        {material_code}
     }}
         """
 
         code_content += code_tmplt_prim.format(
-            glsl=prim.glsl()
+            intersect_call=prim.intersect_call(),
+            material_code=prim.material_code()
         )
 
     return code_tmplt.format(
@@ -150,6 +152,7 @@ def main(scene):
     glsl_code += glsl_header
     glsl_code += glsl_global_ray
     glsl_code += glsl_global_attrs
+    glsl_code += material.glsl_code
     glsl_code += primitives.glsl_code
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
