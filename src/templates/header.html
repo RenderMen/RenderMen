@@ -8,7 +8,8 @@
             {% if user %}
             <li class="user">
                 <a href="/profile">
-                    <img src="{{user.picture}}?s=20" class="user-picture">{{user.email}} [{{user.credits}}]
+                    <img src="{{user.picture}}?s=20" class="user-picture" />{{user.username}}
+                    <span class="coins">{{user.credits}} <img src="/static/img/coin.png" /></span>
                 </a>
             </li>
 

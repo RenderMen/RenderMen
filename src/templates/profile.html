@@ -9,14 +9,14 @@
     </div>
 
     <div class="col-md-9">
-        <h1>{{user.username}}</h1>
+        <h1 class="big-username">{{user.username}}</h1>
         <ul class="list-group">
             <li class="list-group-item">
                 <strong>Email :</strong> {{user.username}}
             </li>
 
             <li class="list-group-item">
-                <strong>Credits :</strong> {{user.credits}}
+                <strong>Credits :</strong> <span class="coins">{{user.credits}} <img src="/static/img/coin.png" /></span>
             </li>
 
         </ul>
