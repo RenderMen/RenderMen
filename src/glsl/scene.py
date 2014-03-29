@@ -2,6 +2,7 @@
 import math
 import camera
 import primitives
+import library
 
 
 class Scene:
@@ -21,13 +22,12 @@ class Scene:
         self.primitives.append(primitive)
 
     def composeGLSL(self):
+        return library.main(self)
 
-        return """
+if __name__ == "__main__":
+    s = Scene()
+    s.add(primitives.Sphere())
 
-            void
-            main()
-            {
-                gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
-            }
+    glsl = s.composeGLSL()
 
-        """
+    print glsl
