@@ -69,20 +69,31 @@ def api_get_tile_assignment(rendering_id):
     rendering = Rendering.objects.get(id=rendering_id)
     assignment = rendering.get_assignment()
 
-
     if assignment:
         # Assigning to user
         assignment.status = Assigment.ASSIGNED
         assignment.date = datetime.now()
         assignment.save()
-        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict()))
+        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL()))
     else:
         return jsonify(ok=False)
 
+
+@app.route("/api/rendering/<rendering_id>")
+def api_rendering(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    rendering_dict = rendering.to_dict()
+    # rendering_dict['completion'] = rendering.completion
+
+    return jsonify(ok=True, result=rendering_dict)
+
 @app.route("/api/rendering/first")
-def api_rendering():
-    rendering = Rendering.objects().order_by('-date_created').first()
-    return jsonify(ok=True, result=rendering.to_dict())
+def api_first_rendering():
+    rendering = Rendering.objects().order_by('-date_created').first().to_dict()
+    rendering_dict = rendering.to_dict()
+    # rendering_dict['completion'] = rendering.completion
+
+    return jsonify(ok=True, result=rendering_dict)
 
 
 @app.route("/api/login", methods=['POST'])
