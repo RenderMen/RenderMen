@@ -66,7 +66,7 @@ function testGetShader() {
     apiCall('api/shader', 'GET', {}, function(data) {
         fragmentShader = data.responseText;
         console.log(fragmentShader);
-        //fullscreenProgram = createProgram(gl, fullscreenVertexShader, fragmentShader);
+        fullscreenProgram = createProgram(gl, fullscreenVertexShader, fragmentShader);
     });
 }
 
