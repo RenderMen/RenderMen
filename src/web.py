@@ -53,6 +53,11 @@ def hello():
 def profile():
     return render_template('profile.html')
 
+@app.route("/add_scene")
+@requires_login
+def add_scene():
+    return render_template('add_scene.html')
+
 # API
 @app.route("/api/shader")
 def api_shader():
@@ -77,7 +82,6 @@ def api_signup():
 
     if User.objects(email=email).first():
         return jsonify(ok=False, message="This email is already used.")
-
     try:
         user = User.new_user(email=email, username=username, password=password)
         user.save()
