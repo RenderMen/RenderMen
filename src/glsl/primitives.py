@@ -117,18 +117,18 @@ class Sphere(AbstractMaterial):
 class Plan(AbstractMaterial):
     """
         normal = vec3
-        origin_distance = float
+        distance = float
     """
 
-    def __init__(self, material=None, normal=[0.0, 0.0, 0.0], origin_distance=1.0):
+    def __init__(self, material=None, normal=[0.0, 0.0, 1.0], distance=0.0):
         AbstractMaterial.__init__(self, material=material)
 
         self.normal = normal
-        self.origin_distance = origin_distance
+        self.distance = distance
 
     @property
     def vec4(self):
-        return [self.normal[0], self.normal[1], self.normal[2], self.origin_distance]
+        return [self.normal[0], self.normal[1], self.normal[2], self.distance]
 
     def intersect_call(self):
         code_tmplt = "intersect_plan({plan})"
