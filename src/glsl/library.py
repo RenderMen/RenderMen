@@ -51,7 +51,7 @@ object_sphere(vec4 sphere)
 
     if (det <= 0.0)
     {
-        return 0;
+        return;
     }
 
     float distance = b - sqrt(det);
@@ -107,7 +107,7 @@ ray_launch(vec3 origin, vec3 dir)
     ray_intersection_dist = MATH_FAR;
     ray_color = vec3(0.0);
 
-    ray_intersect()
+    ray_intersect();
 
     return ray_color;
 }
