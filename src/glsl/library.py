@@ -105,6 +105,7 @@ def glsl_main(scene):
 varying vec4 position;
 uniform float width;
 uniform float height;
+uniform vec2 offset;
 
 void
 main()
@@ -124,7 +125,7 @@ main()
 
     vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
 
-    vec3 pos = c + xx * position.x * u + yy * position.y * v;
+    vec3 pos = c + (xx * (position.x + offset.x)) * u + (yy * (position.y + offset.y)) * v;
 
     ray_dir = normalize(pos - camera_origin);
 
