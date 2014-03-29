@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import sys
+sys.path.append('..')
 
 import math
 import camera
@@ -7,16 +11,25 @@ import library
 import utils
 
 
-class Scene:
+from datetime import datetime
+
+import mongoengine
+
+from model.user import User
+
+class Scene(mongoengine.Document):
     """scene content
 
         camera = Camera()
         primitives = [primitives.Sphere]
     """
+    title = mongoengine.StringField(primary_key=True)
+    description = mongoengine.StringField(default=None)
+    created_by = mongoengine.ReferenceField(User, required=True)
+    creation_time = mongoengine.DateTimeField(default=datetime.now)
 
-    def __init__(self):
-        self.camera = camera.Camera()
-        self.primitives = []
+    camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
+    primitives = mongoengine.ListField(mongoengine.ReferenceField(primitives.Abstract), default=list)
 
     def add(self, primitive):
         self.primitives.append(primitive)
