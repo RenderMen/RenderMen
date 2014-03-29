@@ -12,6 +12,7 @@ from glsl.scene import boiler_scene
 
 # Flask app
 app = Flask(__name__)
+app.secret_key = config.session_secret_key
 
 # DB init
 mongoengine.connect(config.db_name)
@@ -28,15 +29,16 @@ def hello():
 
 @app.route("/api/shader")
 def api_shader():
-    return glsl_scene.composeGLSL()
+    return jsonify(ok=True, result=glsl_scene.composeGLSL())
 
-@app.route("/api/signin")
+@app.route("/api/login", methods=['POST'])
 def api_connect():
-    email, password = request.json['email'].lowercase(), request.json['password']
+    email, password = request.json['email'].lower(), request.json['password']
     try:
         user = User.objects.get(email=email)
         if user.secret_hash == hash_password(password, user.salt):
             connect_user(user)
+            return jsonify(ok=True)
         else:
             return jsonify(ok=False)
     except mongoengine.DoesNotExist:

@@ -4,16 +4,22 @@
 
         <ul class="nav navbar-nav pull-right">
             <li>
-                <a href="/login" class="btn btn-outline">
-                    Login
+                <a href="/login" class="btn btn-outline dropdown-toggle" data-toggle="dropdown">
+                    Login <strong class="caret"></strong>
                 </a>
+                <div class="dropdown-menu pull-right login-form">
+                    {% include "login.html" %}
+                </div>
             </li>
 
             <li>
-                <a href="/login" class="btn btn-outline">
-                    Login
+                <a href="#" class="btn btn-outline">
+                    Signup
                 </a>
             </li>
+
+
+
 
         </ul>
 
