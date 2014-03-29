@@ -74,13 +74,6 @@ function drawFramebuffer(glContext, program, nbSamples) {
     var vertexLoc = gl.getAttribLocation(program, "vertex");
     assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
 
-    //>>> Retrieve attribute uniforms
-    var widthLoc = gl.getUniformLocation(program, "width");
-    assert(widthLoc != -1, "Invalid location of uniform \"width\"");
-
-    var heightLoc = gl.getUniformLocation(program, "height");
-    assert(heightLoc != -1, "Invalid location of uniform \"height\"");
-
     var offsetLoc = gl.getUniformLocation(program, "offset");
     assert(offsetLoc != -1, "Invalid location of uniform \"offset\"");
 
@@ -95,8 +88,6 @@ function drawFramebuffer(glContext, program, nbSamples) {
     gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0); // Vertices
 
     //>>> Send uniforms
-    gl.uniform1f(widthLoc, width); // Width of the viewport
-    gl.uniform1f(heightLoc, height); // Height of the viewport
     gl.uniform1f(nbSamplesLoc, nbSamples * nbSamples); // Number of samples
 
     var pixelWidth = 2 / width;

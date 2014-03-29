@@ -56,6 +56,11 @@ class Assigment(mongoengine.Document):
     date = mongoengine.DateTimeField()
     status = mongoengine.StringField(default="unassigned")
 
+    rendering = mongoengine.ReferenceField("Rendering", required=True)
+
+    def composeGLSL(self):
+        return library.main_assigment(self)
+
 
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
@@ -119,7 +124,8 @@ class Rendering(mongoengine.Document):
                 y=y,
                 width=a_width,
                 height=a_height,
-                samples=samples
+                samples=samples,
+                rendering=rendering
             )
 
             r.assignments.append(a)
