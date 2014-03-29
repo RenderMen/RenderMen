@@ -1,14 +1,20 @@
 var fullscreenVertexShader =
 "precision highp float; \
 attribute vec2 vertex; \
+attribute float width; \
+attribute float height; \
 varying vec2 texcoord; \
 varying vec4 position; \
+varying float w; \
+varying float h; \
 void \
 main() \
 { \
     texcoord = 0.5 * vertex + 0.5; \
     gl_Position = vec4(vertex, 0.0, 1.0); \
     position = gl_Position; \
+    w = width; \
+    h = height; \
 } \
 ";
 
