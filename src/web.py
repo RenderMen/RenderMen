@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from functools import wraps
 import json
+from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
@@ -9,7 +10,7 @@ from flask import Flask, render_template, session, request, jsonify, g, redirect
 import config
 from model.user import User, hash_password
 
-from glsl.scene import Rendering, Scene
+from glsl.scene import Rendering, Scene, Assigment
 
 # Monkey-patching mongoengine
 mongoengine.Document.to_dict = lambda d : json.loads(d.to_json())
@@ -63,12 +64,22 @@ def api_shader():
     rendering = Rendering.objects().order_by('-date_created').first()
     return jsonify(ok=True, result=rendering.scene.composeGLSL())
 
-@app.route("/api/rendering/<rendering_id>/tile")
+@app.route("/api/rendering/<rendering_id>/assignment")
 def api_get_tile_assignment(rendering_id):
     rendering = Rendering.objects.get(id=rendering_id)
-    return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), shader=rendering.scene.composeGLSL()))
+    assignment = rendering.get_assignment()
 
-@app.route("/api/rendering/last")
+
+    if assignment:
+        # Assigning to user
+        assignment.status = Assigment.ASSIGNED
+        assignment.date = datetime.now()
+        assignment.save()
+        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict()))
+    else:
+        return jsonify(ok=False)
+
+@app.route("/api/rendering/first")
 def api_rendering():
     rendering = Rendering.objects().order_by('-date_created').first()
     return jsonify(ok=True, result=rendering.to_dict())

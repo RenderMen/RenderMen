@@ -48,13 +48,16 @@ class Scene(mongoengine.Document):
 
 
 class Assigment(mongoengine.Document):
+    UNASSIGNED, ASSIGNED, DONE = range(3)
+
     x = mongoengine.IntField(required=True)
     y = mongoengine.IntField(required=True)
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
     samples = mongoengine.IntField(required=True)
-    date = mongoengine.DateTimeField()
-    status = mongoengine.StringField(default="unassigned")
+
+    date = mongoengine.DateTimeField(default=datetime.now)
+    status = mongoengine.IntField(default=UNASSIGNED)
 
 
 class Rendering(mongoengine.Document):
@@ -71,7 +74,7 @@ class Rendering(mongoengine.Document):
         assert len(self.assignments) != 0
 
         for assignment in self.assignments:
-            if assignment.status != "unassigned":
+            if assignment.status != Assigment.UNASSIGNED:
                 continue
 
             return assignment
