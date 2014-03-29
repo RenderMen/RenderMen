@@ -27,9 +27,9 @@ precision highp float;
     )
 
 
-# ------------------------------------------------------------------------------ GLSL GLOBAL RAY
+# ------------------------------------------------------------------------------ GLSL GLOBAL
 
-glsl_global_ray = """
+glsl_global = """
 
 vec3
 ray_origin;
@@ -43,12 +43,8 @@ ray_color;
 float
 ray_intersection_dist;
 
-"""
-
-
-# ------------------------------------------------------------------------------ GLSL MATERIAL ATTRIBUTE
-
-glsl_global_attrs = """
+int
+ray_next_iteration;
 
 vec3
 attr_pos;
@@ -56,10 +52,26 @@ attr_pos;
 vec3
 attr_normal;
 
+
+void
+ray_continue(vec3 dir)
+{
+    ray_origin = attr_pos + dir * MATH_EPSILON;
+    ray_dir = dir;
+
+    ray_next_iteration = 1;
+}
+
+void
+ray_stop()
+{
+    ray_next_iteration = 0;
+}
+
 """
 
 
-# ------------------------------------------------------------------------------ GLSL RAY LAUNCH
+# ------------------------------------------------------------------------------ GLSL RAY INTERSECTION
 
 def glsl_intersect(scene):
     code_tmplt = """
@@ -98,12 +110,32 @@ vec3
 ray_launch(vec3 origin, vec3 dir)
 {
     ray_origin = origin;
-    ray_intersection_dist = MATH_FAR;
+    ray_dir = dir;
     ray_color = vec3(0.0);
 
-    ray_intersect();
+    vec3 frag_color = vec3(1.0);
 
-    return ray_color;
+    for (int i = 0; i < 5; i++)
+    {
+        ray_intersection_dist = MATH_FAR;
+        ray_next_iteration = 0;
+
+        ray_intersect();
+
+        frag_color *= ray_color;
+
+        if (ray_next_iteration == 0)
+        {
+            return frag_color;
+        }
+
+        if (ray_intersection_dist == MATH_FAR)
+        {
+            return frag_color;
+        }
+    }
+
+    return vec3(0.0);
 }
 
 """
@@ -139,10 +171,9 @@ main()
     vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
 
     vec3 pos = c + (xx * (position.x + offset.x)) * u + (yy * (position.y + offset.y)) * v;
+    vec3 dir = normalize(pos - camera_origin);
 
-    ray_dir = normalize(pos - camera_origin);
-
-    vec3 ray_color = ray_launch(pos, camera_dir);
+    vec3 ray_color = ray_launch(pos, dir);
 
     gl_FragColor = vec4(ray_color / nb_samples, 1.0);
 }}
@@ -162,8 +193,7 @@ def main(scene):
     glsl_code = ""
 
     glsl_code += glsl_header()
-    glsl_code += glsl_global_ray
-    glsl_code += glsl_global_attrs
+    glsl_code += glsl_global
 
     glsl_code += glsl_math.glsl_code
     glsl_code += material.glsl_code

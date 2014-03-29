@@ -81,7 +81,10 @@ class AbstractMaterial:
 
     def material_code(self):
         if self.material == None:
-            return "ray_color = 0.5 * attr_normal + 0.5;"
+            return """
+    ray_color = 0.5 * attr_normal + 0.5;
+    ray_stop();
+    """
 
         return self.material.code()
 

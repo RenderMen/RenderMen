@@ -15,6 +15,8 @@ material_albedo(vec3 albedo)
     vec3 half_sphere = random_half_sphere();
 
     vec3 new_ray_dir = tbn * half_sphere;
+
+    ray_continue(new_ray_dir);
 }
 
 """
