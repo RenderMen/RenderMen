@@ -15,7 +15,6 @@ function apiCall(path, method, params, callback) {
 
 }
 
-require(["shader", "fullscreen"]);
 function main()
 {
     var canvas = document.getElementById("renderCanvas");
