@@ -25,6 +25,9 @@ ray_origin;
 vec3
 ray_dir;
 
+vec3
+ray_color;
+
 float
 ray_intersection_dist;
 
@@ -56,13 +59,43 @@ object_sphere(vec4 sphere)
     if ((distance > MATH_EPSILONE) && (distance < ray_intersection_dist))
     {
         ray_intersection_dist = distance;
+        ray_color = vec3(0.0, 0.0, 1.0);
     }
 }
 
 """
 
 
-# ------------------------------------------------------------------------------ GLSL MAIN
+# ------------------------------------------------------------------------------ GLSL RAY LAUNCH
+
+def glsl_intersect(scene):
+    code_function_tmplt = """
+
+void
+ray_intersect()
+{{
+    {code_content}
+}}
+
+"""
+
+    code_tmplt_sphere = """
+    object_sphere({sphere});
+    """
+
+    code_content = ""
+
+    for prim in scene.primitives:
+        code_content += code_tmplt_sphere.format(
+            sphere=utils.code_vec(prim.vec4)
+        )
+
+    return code_function_tmplt.format(
+        code_content=code_content
+    )
+
+
+# ------------------------------------------------------------------------------ GLSL RAY LAUNCH
 
 glsl_ray_launch = """
 
@@ -72,8 +105,11 @@ ray_launch(vec3 origin, vec3 dir)
     ray_origin = origin;
     ray_dir = dir;
     ray_intersection_dist = MATH_FAR;
+    ray_color = vec3(0.0);
 
-    return vec3(0.0);
+    ray_intersect()
+
+    return ray_color;
 }
 
 """
@@ -113,6 +149,8 @@ def main(scene):
     glsl_code += glsl_header
     glsl_code += glsl_global_ray
     glsl_code += glsl_sphere_code
+    glsl_code += glsl_intersect(scene)
+    glsl_code += glsl_ray_launch
     glsl_code += glsl_main(scene)
 
     return glsl_code
