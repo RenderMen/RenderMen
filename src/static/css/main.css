@@ -24,6 +24,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: inherit;
 }
 
+.big-title {
+    letter-spacing: -1px;
+    font-weight: bold;
+}
+
 h1, h2, h3 {
   margin-top: 10px;
 }
@@ -95,7 +100,5 @@ nav .coins img {
 /* Profile page */
 
 .big-username {
-    letter-spacing: -1px;
-    font-weight: bold;
     font-size: 54px;
 }
