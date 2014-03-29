@@ -73,7 +73,6 @@ vec3
 ray_launch(vec3 origin, vec3 dir)
 {
     ray_origin = origin;
-    ray_dir = dir;
     ray_intersection_dist = MATH_FAR;
     ray_color = vec3(0.0);
 
@@ -90,6 +89,8 @@ ray_launch(vec3 origin, vec3 dir)
 def glsl_main(scene):
     code_tmplt = """
 
+varying vec4 position;
+
 void
 main()
 {{
@@ -97,7 +98,22 @@ main()
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
 
-    vec3 ray_color = ray_launch(camera_origin, camera_dir);
+    float far = 1.0;
+    float aspect = 1.0;
+
+    float xx = tan(camera_field_of_view / 2.0) * far;
+    float yy = tan(camera_field_of_view / 2.0) * far;
+
+    vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
+    vec3 v = cross(u, camera_dir);
+
+    vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
+
+    vec3 pos = c + xx * position.x * u + yy * position.y * v;
+
+    ray_dir = normalize(pos - camera_origin);
+
+    vec3 ray_color = ray_launch(pos, camera_dir);
 
     gl_FragColor = vec4(ray_color, 1.0);
 }}

@@ -12,7 +12,8 @@ function createShader(gl, shaderType, shaderCode)
     if(!success)
     {
         var log = gl.getShaderInfoLog(shader);
-        throw "Failed to compile shader\nCODE:\n" + shaderCode + "\nLOG:\n" + log;
+        //throw "Failed to compile shader\nCODE:\n" + shaderCode + "\nLOG:\n" + log;
+        throw "Failed to compile shader\nLOG:\n" + log;
     }
 
     return shader;
