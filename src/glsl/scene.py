@@ -43,9 +43,6 @@ class Scene(mongoengine.Document):
             primitive.save()
         super(Scene, self).save(*args, **kwargs)
 
-    def composeGLSL(self):
-        return library.main(self)
-
 
 class Assigment(mongoengine.Document):
     x = mongoengine.IntField(required=True)
