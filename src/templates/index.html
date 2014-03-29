@@ -5,6 +5,7 @@
 <h1>Index</h1>
 <p class="important">
 Welcome on my awesome homepage.
+</p>
 
 <!-- Main canvas -->
 <canvas id="renderCanvas" width="512" height="512" style="border:1px solid #000000;">
@@ -14,7 +15,8 @@ Welcome on my awesome homepage.
 {% endblock %}
 
 {% block javascript %}
+<script src="/static/js/utils.js"></script>
 <script src="/static/js/main.js"></script>
-<script src="static/js/shader.js"></script>
-<script src="static/js/fullscreen.js"></script>
+<script src="/static/js/shader.js"></script>
+<script src="/static/js/fullscreen.js"></script>
 {% endblock %}

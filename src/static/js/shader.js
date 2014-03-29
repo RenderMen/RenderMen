@@ -1,9 +1,11 @@
 function createShader(gl, shaderType, shaderCode)
 {
+    assert(gl, "Invalid WebGL context");
+
     var shader = gl.createShader(shaderType);
 
     gl.shaderSource(shader, shaderCode);
-    gl.createShader(shader);
+    gl.compileShader(shader);
 
     var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 
@@ -18,6 +20,8 @@ function createShader(gl, shaderType, shaderCode)
 
 function createProgram(gl, vertexCode, fragmentCode)
 {
+    assert(gl, "Invalid WebGL context");
+
     var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexCode);
     var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentCode);
 
@@ -28,7 +32,7 @@ function createProgram(gl, vertexCode, fragmentCode)
 
     gl.linkProgram(program);
 
-    var success = gl.getProgramParameter(shader, gl.LINK_STATUS);
+    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
 
     if(!success)
     {
