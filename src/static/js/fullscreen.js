@@ -1,3 +1,26 @@
+var fullscreenVertexShader =
+"precision highp float; \
+attribute vec2 vertex; \
+varying vec2 texcoord; \
+void \
+main() \
+{ \
+    texcoord = 0.5 * vertex + 0.5; \
+    gl_Position = vec4(vertex, 0.0, 1.0); \
+} \
+";
+
+var fullscreenFragmentShader =
+"precision highp float; \
+varying vec2 texcoord; \
+uniform sampler2D texture; \
+void \
+main() \
+{ \
+    gl_FragColor = texture2D(texture, texcoord); \
+} \
+";
+
 function fullscreenBuffer(gl)
 {
     var buffer = gl.createBuffer();
