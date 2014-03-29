@@ -23,16 +23,22 @@ class Scene(mongoengine.Document):
         camera = Camera()
         primitives = [primitives.Sphere]
     """
-    title = mongoengine.StringField(primary_key=True)
-    description = mongoengine.StringField(default=None)
-    created_by = mongoengine.ReferenceField(User, required=True)
-    creation_time = mongoengine.DateTimeField(default=datetime.now)
+    # title = mongoengine.StringField(primary_key=True)
+    # description = mongoengine.StringField(default=None)
+    # created_by = mongoengine.ReferenceField(User, required=True)
+    # creation_time = mongoengine.DateTimeField(default=datetime.now)
 
     camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
     primitives = mongoengine.ListField(mongoengine.ReferenceField(primitives.Abstract), default=list)
 
     def add(self, primitive):
         self.primitives.append(primitive)
+
+    def save(self, *args, **kwargs):
+        self.camera.save()
+        for primitive in filter(lambda e : e is not None, self.primitives):
+            primitive.save()
+        super(Scene, self).save(*args, **kwargs)
 
     def composeGLSL(self):
         return library.main(self)

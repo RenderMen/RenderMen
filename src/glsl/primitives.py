@@ -69,6 +69,11 @@ class Abstract(mongoengine.Document):
 
     meta = {'allow_inheritance': True}
 
+    def save(self, *args, **kwargs):
+        if self.material:
+            self.material.save()
+        super(Abstract, self).save(*args, **kwargs)
+
     def material_code(self):
         if self.material is None:
             return "ray_color = 0.5 * attr_normal + 0.5;"
