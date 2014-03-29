@@ -36,7 +36,7 @@ def requires_login(f):
 @app.context_processor
 def load_template_user():
     if session.get('logged_in'):
-        return dict(user=User.objects.get(email=session['logged_in']))
+        return dict(user=User.objects(email=session['logged_in']).first())
     return dict(user=None)
 
 @app.before_request
