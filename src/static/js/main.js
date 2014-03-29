@@ -3,16 +3,15 @@ requirejs.config({
 });
 
 function apiCall(path, method, params, callback) {
-    $.ajax({
+    var request = $.ajax({
       url: path,
       type: method,
       async: true,
       dataType: "json",
       data: JSON.stringify(params),
       contentType: 'application/json;charset=UTF-8',
-      complete: callback
     });
-
+    request.success(callback);
 }
 
 require(["shader", "fullscreen"]);
@@ -55,5 +54,22 @@ function main()
 
 // Main
 $(document).ready(function() {
+    // Main WebGL-related stuff
     main();
+
+    // Configures login dropdown menu
+    $('.dropdown-menu').click(function(event) {
+      event.stopPropagation();
+    });
+
+    // Login btn
+    $('#login-btn').click(function() {
+      console.log('hihi');
+      var email = $('#login-email').val();
+      var password = $('#login-password').val();
+      apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
+        console.log(data);
+      });
+
+    });
 });

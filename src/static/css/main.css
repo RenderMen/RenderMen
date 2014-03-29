@@ -14,3 +14,8 @@ nav {
 .sitename:hover {
     opacity: 1;
 }
+
+.login-form {
+    width: 250px;
+    padding: 15px;
+}
