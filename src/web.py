@@ -74,13 +74,17 @@ def api_connect():
 @app.route("/api/signup", methods=['POST'])
 def api_signup():
     email, username, password = request.json['email'].lower().strip(), request.json['username'].lower().strip(), request.json['password']
+
+    if User.objects(email=email).first():
+        return jsonify(ok=False, message="This email is already used.")
+
     try:
         user = User.new_user(email=email, username=username, password=password)
         user.save()
         connect_user(user)
         return jsonify(ok=True)
     except mongoengine.ValidationError:
-        return jsonify(ok=False)
+        return jsonify(ok=False, error="Incorrect email or password")
 
 @app.route("/api/logout", methods=['POST'])
 def api_logout():
