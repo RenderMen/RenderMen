@@ -36,7 +36,7 @@ def requires_login(f):
 @app.context_processor
 def load_template_user():
     if session.get('logged_in'):
-        return dict(user=User.objects.get(email=session['logged_in']))
+        return dict(user=User.objects(email=session['logged_in']).first())
     return dict(user=None)
 
 @app.before_request
@@ -71,8 +71,19 @@ def api_connect():
     except mongoengine.DoesNotExist:
         return jsonify(ok=False)
 
+@app.route("/api/signup", methods=['POST'])
+def api_signup():
+    email, username, password = request.json['email'].lower().strip(), request.json['username'].lower().strip(), request.json['password']
+    try:
+        user = User.new_user(email=email, username=username, password=password)
+        user.save()
+        connect_user(user)
+        return jsonify(ok=True)
+    except mongoengine.ValidationError:
+        return jsonify(ok=False)
+
 @app.route("/api/logout", methods=['POST'])
-def logout():
+def api_logout():
     session['logged_in'] = None
     return jsonify(ok=True)
 
