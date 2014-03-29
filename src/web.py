@@ -67,12 +67,14 @@ def api_shader():
 @app.route("/api/rendering/first")
 @requires_login
 def api_first_rendering():
-    rendering = Rendering.objects().order_by('-date_created').first()
-    rendering_dict = rendering.to_dict()
-    # rendering_dict['completion'] = rendering.completion
-
-    return jsonify(ok=True, result=rendering_dict)
-
+    available_renderings = [r for r in Rendering.objects().order_by('-date_created')
+                            if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
+    if available_renderings:
+        rendering_dict = available_renderings[0].to_dict()
+        # rendering_dict['completion'] = rendering.completion
+        return jsonify(ok=True, result=rendering_dict)
+    else:
+        return jsonify(ok=False)
 
 @app.route("/api/rendering/<rendering_id>")
 @requires_login
@@ -94,9 +96,10 @@ def api_get_assignment(rendering_id):
         assignment.status = Assignment.ASSIGNED
         assignment.date = datetime.now()
         assignment.save()
-        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL()))
+        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
+        return jsonify(ok=True, result=result)
     else:
-        return jsonify(ok=False)
+        return jsonify(ok=True, result=dict(completed=True))
 
 
 @app.route("/api/assignment/<assignment_id>/complete", methods=['POST'])

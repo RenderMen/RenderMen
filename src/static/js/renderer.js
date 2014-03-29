@@ -10,6 +10,8 @@ function GLContext()
 
     var gl = this.context;
 
+    assert(gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
+
     // Fullscreen vertex buffer
     this.fullscreenBuffer = createFullscreenBuffer(this.context);
 
@@ -43,20 +45,20 @@ GLContext.prototype.processAssignment = function(assignment, shaderCode) {
     // Set viewport
     gl.viewport(0, 0, this.width(), this.height());
 
-    var program = createProgram(this.context, fullscreenVertexShader, data.result);
+    var program = createProgram(this.context, fullscreenVertexShader, shaderCode);
     var texture = this.rayTrace(assignment, program);
 
     this.drawFullscreenQuad(texture);
 }
 
 GLContext.prototype.drawFullscreenQuad = function(texture) {
-    var gl = self.context;
+    var gl = this.context;
 
-    var vertexLoc = gl.getAttribLocation(self.fullscreenProgram, "vertex");
+    var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
     assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
 
-    gl.useProgram(glContext.fullscreenProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
+    gl.useProgram(this.fullscreenProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.enableVertexAttribArray(vertexLoc);
 
@@ -180,30 +182,53 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     return texture;
 }
 
+
+function fetchAssignment() {
+    apiCall('/api/rendering/' + glContext.current_rendering['_id']['$oid'] + '/assignment', 'GET', {}, function(data) {
+        if (!data.ok) {
+            console.log("Couldn't fetch a rendering !");
+            return;
+        }
+
+        // If the rendering is completed, we look for another rendering to complete
+        if (data.result.completed) {
+            console.log("Rendering completed !");
+            fetchRendering();
+        }
+        // Otherwise we process the given assignment
+        glContext.processAssignment(data.result.assignment, data.result.shader);
+
+        // And once that's done, we look for another assignment
+        fetchAssignment();
+    });
+};
+
+function fetchRendering() {
+    apiCall('/api/rendering/first', 'GET', {}, function(data) {
+        if(!data.ok) {
+            console.log("Couldn't retrieve a rendering (all done ?)");
+            return;
+        }
+
+        var rendering = data.result;
+        glContext.current_rendering = rendering;
+
+        var $canvas = $('#renderCanvas');
+        $canvas.attr('width', rendering.width);
+        $canvas.attr('height', rendering.height);
+
+        // Fetching an assignment for that rendering
+        fetchAssignment();
+    });
+};
+
 // Main
 function main() {
     glContext = new GLContext();
     assert(glContext, "Failed to get WebGL context");
 
     // Retrieve a rendering to complete
-    apiCall('/api/rendering/first', 'GET', {}, function(data) {
-        if(data.ok) {
-            var rendering = data.result;
-            var rendering_id = rendering['_id']['$oid'];
-            var $canvas = $('#renderCanvas');
-            $canvas.attr('width', rendering.width);
-            $canvas.attr('height', rendering.height);
-
-            // Fetching an assignment for that rendering
-            apiCall('/api/rendering/' + rendering_id + '/assignment', 'GET', {}, function(data) {
-                glContext.processAssignment(data.result.assignment, data.result.shader);
-            });
-
-        } else {
-            console.log("Failed to retrieve shader");
-            return;
-        }
-    });
+    fetchRendering();
 }
 
 
