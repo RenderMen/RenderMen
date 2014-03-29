@@ -10,6 +10,8 @@ function GLContext()
 
     var gl = this.context;
 
+    assert(gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
+
     // Fullscreen vertex buffer
     this.fullscreenBuffer = createFullscreenBuffer(this.context);
 
@@ -42,20 +44,20 @@ GLContext.prototype.processAssignment = function(assigment, shaderCode) {
     // Set viewport
     gl.viewport(0, 0, this.width(), this.height());
 
-    var program = createProgram(this.context, fullscreenVertexShader, data.result);
+    var program = createProgram(this.context, fullscreenVertexShader, shaderCode);
     var texture = this.rayTrace(assigment, program);
 
     this.drawFullscreenQuad(texture);
 }
 
 GLContext.prototype.drawFullscreenQuad = function(texture) {
-    var gl = self.context;
+    var gl = this.context;
 
-    var vertexLoc = gl.getAttribLocation(self.fullscreenProgram, "vertex");
+    var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
     assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
 
-    gl.useProgram(glContext.fullscreenProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
+    gl.useProgram(this.fullscreenProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.enableVertexAttribArray(vertexLoc);
 

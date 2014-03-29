@@ -163,26 +163,26 @@ uniform float sample_id;
 void
 main()
 {{
-    const int image_width = {image_width};
-    const int image_height = {image_height};
-    const float image_aspect_ratio = {image_aspect_ratio};
+    int image_width = {image_width};
+    int image_height = {image_height};
+    float image_aspect_ratio = {image_aspect_ratio};
 
-    const int render_width = {render_width};
-    const int render_heigth = {render_height};
-    const int render_x = {render_x};
-    const int render_y = {render_y};
+    int render_width = {render_width};
+    int render_height = {render_height};
+    int render_x = {render_x};
+    int render_y = {render_y};
 
-    const vec3 camera_origin = {camera_origin};
-    const vec3 camera_dir = {camera_dir};
-    const float camera_field_of_view = {camera_field_of_view};
+    vec3 camera_origin = {camera_origin};
+    vec3 camera_dir = {camera_dir};
+    float camera_field_of_view = {camera_field_of_view};
 
-    vec2 screen_coord = position * 0.5 + 0.5;
+    vec2 screen_coord = position.xy * 0.5 + 0.5;
 
     screen_coord.x *= float(render_width);
     screen_coord.y *= float(render_height);
 
-    screen_coord.x += render_x;
-    screen_coord.y += render_y;
+    screen_coord.x += float(render_x);
+    screen_coord.y += float(render_y);
 
     screen_coord.x /= float(image_width);
     screen_coord.y /= float(image_height);
@@ -211,7 +211,7 @@ main()
 
 """
 
-    image_aspect_ratio = assignment.rendering.width / assignment.rendering.height
+    image_aspect_ratio = float(assignment.rendering.width) / float(assignment.rendering.height)
 
     return code_tmplt.format(
         image_width=assignment.rendering.width,
@@ -245,5 +245,8 @@ def main(scene, assignment):
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
     glsl_code += glsl_main(scene, assignment)
+
+    with open("shader.glsl", "w") as f:
+        f.write(glsl_code)
 
     return glsl_code
