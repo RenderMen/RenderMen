@@ -1,0 +1,16 @@
+nav {
+    padding: 0 8px;
+}
+
+.sitename {
+    font-size: 20px;
+    font-weight: normal;
+    opacity: 0.6;
+    margin-top: 15px;
+
+    transition: 0.75s opacity;
+}
+
+.sitename:hover {
+    opacity: 1;
+}
