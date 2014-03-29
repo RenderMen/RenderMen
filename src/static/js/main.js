@@ -89,6 +89,8 @@ $(document).ready(function() {
         console.log(data);
       });
 
+      // Redirecting the user to the frontpage
+      window.location.replace('/')
     });
 
     //testGetShader();
