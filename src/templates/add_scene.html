@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1 class="big-title">
+        Scene creation
+    </h1>
+
+    <form class="form-horizontal">
+
+      <div class="form-group">
+        <label class="col-md-2 control-label">Scene title</label>
+        <div class="col-md-10">
+          <input id="title" name="title" type="text" placeholder="Title" class="form-control input-md">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 control-label">Scene description</label>
+        <div class="col-md-10">
+          <textarea id="description" name="description" placeholder="A short description" class="form-control input-md"></textarea>
+        </div>
+      </div>
+
+
+      <button id="btn" name="confirm-scene" type="button" class="btn btn-block btn-success">Login</button>
+    </form>
+</div>
+
+{% endblock %}

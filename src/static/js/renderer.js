@@ -64,6 +64,9 @@ function drawScene(gl) {
             var nbSamplesLoc = gl.getUniformLocation(program, "nb_samples");
             assert(nbSamplesLoc != -1, "Invalid location of uniform \"nb_samples\"");
 
+            var sampleId = gl.getUniformLocation(program, "sample_id");
+            assert(sampleId != -1, "Invalid location of uniform \"sample_id\"");
+
             gl.enableVertexAttribArray(vertexLoc);
             gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
             gl.uniform1f(widthLoc, width);
@@ -95,6 +98,7 @@ function drawScene(gl) {
                     var yOffset = halfPixelHeight - i * yStep;
 
                     gl.uniform2f(offsetLoc, xOffset, yOffset);
+                    gl.uniform1f(sampleId, i * NB_SAMPLES + j);
                     gl.drawArrays(gl.TRIANGLES, 0, 6);
                 }
             }

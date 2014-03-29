@@ -12,8 +12,8 @@ def hash_password(password, salt):
     return hashlib.sha512(salt + password).hexdigest()
 
 class User(mongoengine.Document):
-    email = mongoengine.StringField(primary_key=True)
-    username = mongoengine.StringField(required=True)
+    email = mongoengine.StringField(primary_key=True, unique=True)
+    username = mongoengine.StringField(required=True, unique=True)
 
     salt = mongoengine.StringField(required=True)
     secret_hash = mongoengine.StringField(required=True)

@@ -151,10 +151,13 @@ uniform float width;
 uniform float height;
 uniform vec2 offset;
 uniform float nb_samples;
+uniform float sample_id;
 
 void
 main()
 {{
+    random_seed = noise3D(vec3(position.x, position.y, sample_id));
+
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
