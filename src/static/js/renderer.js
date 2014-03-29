@@ -24,47 +24,49 @@ function drawScene(gl) {
     var program;
 
     apiCall('api/shader', 'GET', {}, function(data) {
-        fragmentShader = data.result;
-        program = createProgram(gl, fullscreenVertexShader, fragmentShader);
+        if(data.ok) {
 
-        // Global framebuffer
-        var fbo = createFramebuffer(gl);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            fragmentShader = data.result;
+            program = createProgram(gl, fullscreenVertexShader, fragmentShader);
 
-        // Set viewport
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            var width = gl.drawingBufferWidth;
+            var height = gl.drawingBufferHeight;
 
-        gl.clearColor(0.0, 1.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+            // Global framebuffer
+            var fbo = createFramebuffer(gl);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            // Set viewport
+            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-        gl.useProgram(program);
+            gl.clearColor(0.0, 1.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        vertexLoc = gl.getAttribLocation(program, "vertex");
-        assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
+            gl.useProgram(program);
 
-        widthLoc = gl.getAttribLocation(program, "width");
-        assert(widthLoc != -1, "Invalid location of attribute \"width\"");
+            gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
-        heightLoc = gl.getAttribLocation(program, "height");
-        assert(heightLoc != -1, "Invalid location of attribute \"height\"");
+            var vertexLoc = gl.getAttribLocation(program, "vertex");
+            assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
 
-        console.log("vertex : " + vertexLoc);
-        console.log("width : " + widthLoc);
-        console.log("height : " + heightLoc);
+            var widthLoc = gl.getUniformLocation(program, "width");
+            assert(widthLoc != -1, "Invalid location of uniform \"width\"");
 
-        gl.enableVertexAttribArray(vertexLoc);
-        gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
-        gl.enableVertexAttribArray(widthLoc);
-        gl.vertexAttribPointer(widthLoc, 1, gl.FLOAT, false, 4, 0);
-        gl.enableVertexAttribArray(heightLoc);
-        gl.vertexAttribPointer(heightLoc, 1, gl.FLOAT, false, 4, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+            var heightLoc = gl.getUniformLocation(program, "height");
+            assert(heightLoc != -1, "Invalid location of uniform \"height\"");
 
+            gl.enableVertexAttribArray(vertexLoc);
+            gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
+            gl.uniform1f(widthLoc, width);
+            gl.uniform1f(heightLoc, height);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        } else {
+            console.log("Failed to retrieve shader");
+            return;
+        }
     });
 }
 
