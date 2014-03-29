@@ -65,12 +65,10 @@ class Rendering(mongoengine.Document):
     scene = mongoengine.ReferenceField(Scene)
     date_created = mongoengine.DateTimeField(default=datetime.now)
 
-    assignments = mongoengine.ListField(mongoengine.DateTimeField(), default=list)
+    assignments = mongoengine.ListField(mongoengine.ReferenceField(Assigment), default=list)
 
     def get_assignment(self):
         assert len(self.assignments) != 0
-
-        current = datetime.datetime.now()
 
         for assignment in self.assignments:
             if assignment.status != "unassigned":
