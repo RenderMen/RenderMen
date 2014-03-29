@@ -1,3 +1,7 @@
+requirejs.config({
+    baseUrl: 'static/js'
+});
+
 function apiCall(path, method, params, callback) {
     $.ajax({
       url: path,
