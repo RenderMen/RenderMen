@@ -6,9 +6,9 @@
 
         <ul class="nav navbar-nav pull-right">
             {% if user %}
-            <li>
+            <li class="user">
                 <a href="#">
-                    {{user.email}}
+                    {{user.email}} [{{user.credits}}]
                 </a>
             </li>
 
