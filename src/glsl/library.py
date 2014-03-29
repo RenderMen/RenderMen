@@ -47,7 +47,7 @@ object_sphere(vec4 sphere)
     vec3 oc = sphere.xyz - ray_origin;
 
     float b = dot(oc, ray_dir);
-    float det = b * b - dot(oc, oc) + sphere.z * sphere.z;
+    float det = b * b - dot(oc, oc) + sphere.w * sphere.w;
 
     if (det <= 0.0)
     {
