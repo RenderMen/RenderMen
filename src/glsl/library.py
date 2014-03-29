@@ -1,8 +1,11 @@
 
+# ------------------------------------------------------------------------------ GLSL HEADER
 
-# ------------------------------------------------------------------------------ CONST
+glsl_header = """
 
-const = """
+#version 100
+
+precision highp float;
 
 #define MATH_FAR 10000.0
 #define MATH_EPSILONE 0.0001
@@ -10,9 +13,9 @@ const = """
 """
 
 
-# ------------------------------------------------------------------------------ GLOBAL RAY
+# ------------------------------------------------------------------------------ GLSL GLOBAL RAY
 
-global_ray = """
+glsl_global_ray = """
 
 vec3
 ray_origin;
@@ -26,12 +29,12 @@ ray_intersection_dist;
 """
 
 
-# ------------------------------------------------------------------------------ SPHERE
+# ------------------------------------------------------------------------------ GLSL SPHERE
 #
 # sphere is a vec4(center, radius)
 #
 
-sphere_code = """
+glsl_sphere_code = """
 
 void
 object_sphere(vec4 sphere)
@@ -57,9 +60,9 @@ object_sphere(vec4 sphere)
 """
 
 
-# ------------------------------------------------------------------------------ MAIN
+# ------------------------------------------------------------------------------ GLSL MAIN
 
-main = """
+glsl_main = """
 
 void
 main()
@@ -72,3 +75,16 @@ main()
 }
 
 """
+
+
+# ------------------------------------------------------------------------------ MAIN
+
+def main(scene):
+    glsl_code = ""
+
+    glsl_code += glsl_header
+    glsl_code += glsl_global_ray
+    glsl_code += glsl_sphere_code
+    glsl_code += glsl_main
+
+    return glsl_code
