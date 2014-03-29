@@ -34,11 +34,15 @@ function main() {
     gl = getGLContext();
     assert(gl, "Failed to get WebGL context");
 
+    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     // Global fullscreen program
     fullscreenProgram = createProgram(gl, fullscreenVertexShader, fullscreenFragmentShader);
 
     // Global framebuffer
     fbo = createFramebuffer(gl);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
 
     // Set viewport
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -50,6 +54,7 @@ function main() {
 
     gl.useProgram(fullscreenProgram);
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     var fullscreenBuffer = createFullscreenBuffer(gl);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
@@ -65,7 +70,6 @@ function testGetShader() {
 
     apiCall('api/shader', 'GET', {}, function(data) {
         fragmentShader = data.responseText;
-        console.log(fragmentShader);
         fullscreenProgram = createProgram(gl, fullscreenVertexShader, fragmentShader);
     });
 }
