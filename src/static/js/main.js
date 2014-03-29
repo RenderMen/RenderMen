@@ -22,13 +22,14 @@ $(document).ready(function() {
     });
 
     // Login btn
-    $('#login-btn').click(function() {
+    $('#login-btn').click(function(e) {
       var email = $('#login-email').val();
       var password = $('#login-password').val();
 
       apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
         if (!data.ok) {
-          return;
+            $.notify("Incorrect email or password", 'error');
+            return;
         }
 
         // Redirecting the user to the frontpage

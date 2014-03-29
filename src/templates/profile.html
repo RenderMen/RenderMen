@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container row">
+    <div class="col-md-3">
+        <img src="{{user.picture}}?s=250" class="img-thumbnail">
+    </div>
+
+    <div class="col-md-9">
+        <h1 class="big-username big-title">{{user.username}}</h1>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Email :</strong> {{user.username}}
+            </li>
+
+            <li class="list-group-item">
+                <strong>Credits :</strong> <span class="coins">{{user.credits}} <img src="/static/img/coin.png" /></span>
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

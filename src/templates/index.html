@@ -2,22 +2,27 @@
 
 {% block content %}
 
-<h1>Index</h1>
+<div class="container">
 
-<p class="important">
-  Welcome on my awesome homepage.
-</p>
+    <h1 class="big-title">
+        Rendering page
+    </h1>
 
-<!-- Main canvas -->
-<canvas id="renderCanvas" width="1024" height="512" style="border:1px solid #000000;">
-  Your browser does not support HTML5 canvas.
-</canvas>
+    <p class="alert alert-info">
+        Rendering result
+    </p>
+
+    <!-- Main canvas -->
+    <canvas id="renderCanvas" width="1024" height="512" style="border:1px solid #000000;">
+      Your browser does not support HTML5 canvas.
+    </canvas>
+
+</div>
 
 {% endblock %}
 
 {% block javascript %}
 <script src="/static/js/utils.js"></script>
-<script src="/static/js/main.js"></script>
 <script src="/static/js/shader.js"></script>
 <script src="/static/js/fullscreen.js"></script>
 <script src="/static/js/renderer.js"></script>

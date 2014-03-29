@@ -18,7 +18,7 @@ app.secret_key = config.session_secret_key
 # DB init
 mongoengine.connect(config.db_name)
 User.drop_collection()
-dummy = User.new_user('test@test.com', 'password')
+dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
 dummy.save()
 
 # GLSL init
@@ -43,17 +43,24 @@ def load_template_user():
 def load_request_user():
     g.user = User.objects(email=session.get('logged_in')).first()
 
+# Pages
 @app.route("/")
 def hello():
     return render_template('index.html')
 
+@app.route("/profile")
+@requires_login
+def profile():
+    return render_template('profile.html')
+
+# API
 @app.route("/api/shader")
 def api_shader():
     return jsonify(ok=True, result=glsl_scene.composeGLSL())
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
-    email, password = request.json['email'].lower(), request.json['password']
+    email, password = request.json['email'].lower().strip(), request.json['password']
     try:
         user = User.objects.get(email=email)
         if user.secret_hash == hash_password(password, user.salt):
@@ -71,6 +78,8 @@ def logout():
 
 def connect_user(user):
     session['logged_in'] = user.email
+    load_request_user()
+    load_template_user()
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 5000, debug=True)
