@@ -23,8 +23,12 @@ dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
 dummy.save()
 
 # GLSL init
-glsl_scene = boiler_scene(dummy)
+glsl_scene = boiler_scene(dummy, title="Dummy Scene", description="Just a random dummy scene")
 glsl_scene.save()
+
+another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
+another_glsl_scene.save()
+
 
 def requires_login(f):
     @wraps(f)
@@ -53,7 +57,8 @@ def hello():
 @app.route("/profile")
 @requires_login
 def profile():
-    return render_template('profile.html')
+    scenes = Scene.objects(created_by=g.user)
+    return render_template('profile.html', scenes=scenes)
 
 @app.route("/add_scene")
 @requires_login

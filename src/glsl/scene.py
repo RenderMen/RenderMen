@@ -43,8 +43,8 @@ class Scene(mongoengine.Document):
     def composeGLSL(self):
         return library.main(self)
 
-def boiler_scene(user):
-    s = Scene(created_by=user, title="Dummy Scene", description="Just a random dummy scene")
+def boiler_scene(user, title, description):
+    s = Scene(created_by=user, title=title, description=description)
     s.camera.position[0] = -3
     s.camera.position[1] = -3
     s.camera.position[2] = 3
@@ -66,7 +66,7 @@ def boiler_scene(user):
     return s
 
 if __name__ == "__main__":
-    s = boiler_scene(user=None)
+    s = boiler_scene(user=None, title="dummy title", description="dummy description")
 
     glsl = s.composeGLSL()
 
