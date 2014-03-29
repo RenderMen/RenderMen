@@ -26,6 +26,7 @@ class Scene:
 
 def boiler_scene():
     s = Scene()
+    s.camera.position[1] = -3
     s.add(primitives.Sphere())
 
     return s
