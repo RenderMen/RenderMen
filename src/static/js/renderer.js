@@ -34,8 +34,8 @@ GLContext.prototype.height = function() {
 }
 
 GLContext.prototype.processAssignment = function(assigment, shaderCode) {
-    this.canvas.width = assigment["width"]
-    this.canvas.height = assigment["height"]
+    this.canvas.width = parseInt(assigment["width"]);
+    this.canvas.height = parseInt(assigment["height"]);
 
     var gl = this.context;
 
@@ -43,7 +43,7 @@ GLContext.prototype.processAssignment = function(assigment, shaderCode) {
     gl.viewport(0, 0, this.width(), this.height());
 
     var program = createProgram(this.context, fullscreenVertexShader, data.result);
-    var texture = this.rayTrace(program);
+    var texture = this.rayTrace(assigment, program);
 
     this.drawFullscreenQuad(texture);
 }
@@ -69,12 +69,7 @@ GLContext.prototype.drawFullscreenQuad = function(texture) {
 };
 
 // Draw into the glContext framebuffer nbSamples times using the given program
-GLContext.prototype.rayTrace = function(program) {
-    nbSamples = nbSamples || 16;
-
-    var width = glContext.width;
-    var height = glContext.height;
-
+GLContext.prototype.rayTrace = function(assigment, program) {
     var gl = glContext.context;
 
     texture = gl.createTexture();
@@ -134,18 +129,20 @@ GLContext.prototype.rayTrace = function(program) {
     var sampleId = gl.getUniformLocation(program, "sample_id");
     assert(sampleId != -1, "Invalid location of uniform \"sample_id\"");
 
+    var samples = parseInt(assigment["samples"]);
+
     //>>> Send attributes
     gl.enableVertexAttribArray(vertexLoc);
     gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0); // Vertices
 
     //>>> Send uniforms
-    gl.uniform1f(nbSamplesLoc, nbSamples * nbSamples); // Number of samples
+    gl.uniform1f(nbSamplesLoc, samples * samples); // Number of samples
 
-    var pixelWidth = 2 / width;
-    var pixelHeight = 2 / height;
+    var pixelWidth = 2 / this.width();
+    var pixelHeight = 2 / this.height();
 
-    var xStep = pixelWidth / nbSamples;
-    var yStep = pixelHeight / nbSamples;
+    var xStep = pixelWidth / samples;
+    var yStep = pixelHeight / samples;
 
     var halfPixelWidth = pixelWidth / 2;
     var halfPixelHeight = pixelHeight / 2;
@@ -154,15 +151,15 @@ GLContext.prototype.rayTrace = function(program) {
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.blendEquation(gl.FUNC_ADD);
 
-    for(var i = 0; i < nbSamples; i++)
+    for(var i = 0; i < samples; i++)
     {
-        for(var j = 0; j < nbSamples; j++)
+        for(var j = 0; j < samples; j++)
         {
             var xOffset = -halfPixelWidth + j * xStep;
             var yOffset = halfPixelHeight - i * yStep;
 
             gl.uniform2f(offsetLoc, xOffset, yOffset);
-            gl.uniform1f(sampleId, i * nbSamples + j);
+            gl.uniform1f(sampleId, i * samples + j);
 
             // Actual draw call
             gl.drawArrays(gl.TRIANGLES, 0, 6);
