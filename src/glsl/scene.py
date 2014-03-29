@@ -47,8 +47,10 @@ class Scene(mongoengine.Document):
         return library.main(self)
 
 
-class Assigment(mongoengine.Document):
+class Assignment(mongoengine.Document):
     UNASSIGNED, ASSIGNED, DONE = range(3)
+
+    rendering_author = mongoengine.ReferenceField(User, required=True)
 
     x = mongoengine.IntField(required=True)
     y = mongoengine.IntField(required=True)
@@ -59,6 +61,7 @@ class Assigment(mongoengine.Document):
     date = mongoengine.DateTimeField(default=datetime.now)
     status = mongoengine.IntField(default=UNASSIGNED)
 
+    pixels = mongoengine.ListField()
 
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
@@ -68,13 +71,13 @@ class Rendering(mongoengine.Document):
     scene = mongoengine.ReferenceField(Scene)
     date_created = mongoengine.DateTimeField(default=datetime.now)
 
-    assignments = mongoengine.ListField(mongoengine.ReferenceField(Assigment), default=list)
+    assignments = mongoengine.ListField(mongoengine.ReferenceField(Assignment), default=list)
 
     def get_assignment(self):
         assert len(self.assignments) != 0
 
         for assignment in self.assignments:
-            if assignment.status != Assigment.UNASSIGNED:
+            if assignment.status != Assignment.UNASSIGNED:
                 continue
 
             return assignment
@@ -115,12 +118,13 @@ class Rendering(mongoengine.Document):
             assert a_width < width
             assert a_height < height
 
-            a = Assigment(
+            a = Assignment(
                 x=x,
                 y=y,
                 width=a_width,
                 height=a_height,
-                samples=samples
+                samples=samples,
+                rendering_author=r.scene.created_by
             )
 
             r.assignments.append(a)

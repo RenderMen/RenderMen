@@ -10,7 +10,7 @@ from flask import Flask, render_template, session, request, jsonify, g, redirect
 import config
 from model.user import User, hash_password
 
-from glsl.scene import Rendering, Scene, Assigment
+from glsl.scene import Rendering, Scene, Assignment
 
 # Monkey-patching mongoengine
 mongoengine.Document.to_dict = lambda d : json.loads(d.to_json())
@@ -64,22 +64,18 @@ def api_shader():
     rendering = Rendering.objects().order_by('-date_created').first()
     return jsonify(ok=True, result=rendering.scene.composeGLSL())
 
-@app.route("/api/rendering/<rendering_id>/assignment")
-def api_get_tile_assignment(rendering_id):
-    rendering = Rendering.objects.get(id=rendering_id)
-    assignment = rendering.get_assignment()
+@app.route("/api/rendering/first")
+@requires_login
+def api_first_rendering():
+    rendering = Rendering.objects().order_by('-date_created').first()
+    rendering_dict = rendering.to_dict()
+    # rendering_dict['completion'] = rendering.completion
 
-    if assignment:
-        # Assigning to user
-        assignment.status = Assigment.ASSIGNED
-        assignment.date = datetime.now()
-        assignment.save()
-        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL()))
-    else:
-        return jsonify(ok=False)
+    return jsonify(ok=True, result=rendering_dict)
 
 
 @app.route("/api/rendering/<rendering_id>")
+@requires_login
 def api_rendering(rendering_id):
     rendering = Rendering.objects.get(id=rendering_id)
     rendering_dict = rendering.to_dict()
@@ -87,14 +83,41 @@ def api_rendering(rendering_id):
 
     return jsonify(ok=True, result=rendering_dict)
 
-@app.route("/api/rendering/first")
-def api_first_rendering():
-    rendering = Rendering.objects().order_by('-date_created').first().to_dict()
-    rendering_dict = rendering.to_dict()
-    # rendering_dict['completion'] = rendering.completion
+@app.route("/api/rendering/<rendering_id>/assignment")
+@requires_login
+def api_get_assignment(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    assignment = rendering.get_assignment()
 
-    return jsonify(ok=True, result=rendering_dict)
+    if assignment:
+        # Assigning to user
+        assignment.status = Assignment.ASSIGNED
+        assignment.date = datetime.now()
+        assignment.save()
+        return jsonify(ok=True, result=dict(rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL()))
+    else:
+        return jsonify(ok=False)
 
+
+@app.route("/api/assignment/<assignment_id>/complete", methods=['POST'])
+@requires_login
+def complete_assignment(assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    assignment.status = Assignment.DONE
+    # assignment.pixels = request.json['pixels']
+    assignment.save()
+
+    completed_pixels = int(assignment.width * assignment.height)
+
+    g.user.pixels += completed_pixels
+    g.user.credits += completed_pixels / 2
+    g.user.save()
+
+    rendering_author = assignment.rendering_author
+    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
+    rendering_author.save()
+
+    return jsonify(ok=True)
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
