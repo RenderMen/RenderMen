@@ -137,7 +137,7 @@ function drawFramebuffer(glContext, program, nbSamples) {
 // Render the scene using the given program
 function drawScene(glContext, program) {
 
-    var NB_SAMPLES = 16;
+    var NB_SAMPLES = 32;
 
     // Retrieve global gl context
     gl = glContext.context;
