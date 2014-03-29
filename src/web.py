@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from functools import wraps
 
 import mongoengine
-from flask import Flask, render_template, session, request, jsonify
+from flask import Flask, render_template, session, request, jsonify, g, redirect
 
 import config
 from model.user import User, hash_password
@@ -22,6 +23,25 @@ dummy.save()
 
 # GLSL init
 glsl_scene = boiler_scene()
+
+def requires_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in', None):
+            return redirect('/login')
+        else:
+            return f(*args, **kwargs)
+    return decorated_function
+
+@app.context_processor
+def load_template_user():
+    if session.get('logged_in'):
+        return dict(user=User.objects.get(email=session['logged_in']))
+    return dict(user=None)
+
+@app.before_request
+def load_request_user():
+    g.user = User.objects(email=session.get('logged_in')).first()
 
 @app.route("/")
 def hello():
@@ -43,6 +63,11 @@ def api_connect():
             return jsonify(ok=False)
     except mongoengine.DoesNotExist:
         return jsonify(ok=False)
+
+@app.route("/api/logout", methods=['POST'])
+def logout():
+    session['logged_in'] = None
+    return jsonify(ok=True)
 
 def connect_user(user):
     session['logged_in'] = user.email
