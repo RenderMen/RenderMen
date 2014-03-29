@@ -8,11 +8,7 @@ function GLContext()
     this.context = this.canvas.getContext("experimental-webgl");
     assert(this.context, "WebGL not supported");
 
-    // Canvas width
-    this.width = this.context.drawingBufferWidth;
-
-    // Canvas height
-    this.height = this.context.drawingBufferHeight;
+    var gl = this.context;
 
     // Fullscreen vertex buffer
     this.fullscreenBuffer = createFullscreenBuffer(this.context);
@@ -20,51 +16,106 @@ function GLContext()
     // Fullscreen blit program
     this.fullscreenProgram = createProgram(this.context, fullscreenVertexShader, fullscreenFragmentShader);
 
-    // Framebuffer
-    this.framebuffer = new Framebuffer(this.context);
+    // FBO
+    this.fbo = gl.createFramebuffer();
 
-    // Trick to get this in methods
-    var self = this;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
 
-    // Draw fullscreen quad method
-    this.drawFullscreenQuad = function() {
-        var gl = self.context;
-
-        gl.useProgram(glContext.fullscreenProgram);
-
-        var vertexLoc = gl.getAttribLocation(self.fullscreenProgram, "vertex");
-        assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
-        gl.bindTexture(gl.TEXTURE_2D, glContext.framebuffer.textures[0]);
-        gl.enableVertexAttribArray(vertexLoc);
-        gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.useProgram(null);
-    };
+    gl.disable(gl.DEPTH_TEST);
 
 }
 
-// Draw into the glContext framebuffer nbSamples times using the given program
-function drawFramebuffer(glContext, program, nbSamples) {
+GLContext.prototype.width = function() {
+    return this.context.drawingBufferWidth;
+}
 
+GLContext.prototype.height = function() {
+    return this.context.drawingBufferHeight;
+}
+
+GLContext.prototype.processAssignment = function(assigment, shaderCode) {
+    this.canvas.width = assigment["width"]
+    this.canvas.height = assigment["height"]
+
+    var gl = this.context;
+
+    // Set viewport
+    gl.viewport(0, 0, this.width(), this.height());
+
+    var program = createProgram(this.context, fullscreenVertexShader, data.result);
+    var texture = this.rayTrace(program);
+
+    this.drawFullscreenQuad(texture);
+}
+
+GLContext.prototype.drawFullscreenQuad = function(texture) {
+    var gl = self.context;
+
+    var vertexLoc = gl.getAttribLocation(self.fullscreenProgram, "vertex");
+    assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
+
+    gl.useProgram(glContext.fullscreenProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.enableVertexAttribArray(vertexLoc);
+
+    gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.disableVertexAttribArray(vertexLoc);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
+};
+
+// Draw into the glContext framebuffer nbSamples times using the given program
+GLContext.prototype.rayTrace = function(program) {
     nbSamples = nbSamples || 16;
 
     var width = glContext.width;
     var height = glContext.height;
 
-    gl = glContext.context;
-    framebuffer = glContext.framebuffer;
+    var gl = glContext.context;
 
-    // Set viewport
-    gl.viewport(0, 0, width, height);
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width(), this.height(), 0, gl.RGBA, gl.FLOAT, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
+    this.fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    if (!gl.isFramebuffer(this.fbo)) {
+        throw "Invalid framebuffer";
+    }
+
+    var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    switch(status)
+    {
+        case gl.FRAMEBUFFER_COMPLETE:
+            break;
+        case gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            throw "Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            break;
+        case gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            throw "Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            break;
+        case gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+            throw "Incomplete framebuffer: FRAMEBUFFER_INCOMPLETE_DIMENSIONS";
+            break;
+        case gl.FRAMEBUFFER_UNSUPPORTED:
+            throw "Incomplete framebuffer: FRAMEBUFFER_UNSUPPORTED";
+            break;
+        default:
+            throw "Incomplete framebuffer: " + status;
+    }
     // Use the pathtracing program
     gl.useProgram(program);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.fbo);
     gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -119,28 +170,16 @@ function drawFramebuffer(glContext, program, nbSamples) {
     }
 
     gl.disable(gl.BLEND);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.disableVertexAttribArray(vertexLoc);
+
     gl.useProgram(null);
-}
 
-// Render the scene using the given program
-function drawScene(glContext, program) {
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    var NB_SAMPLES = 32;
-
-    // Retrieve global gl context
-    gl = glContext.context;
-
-    // Disable depth test
-    gl.disable(gl.DEPTH_TEST);
-
-    // >>> Draw into the GL context's framebuffer NB_SAMPLES times
-    drawFramebuffer(glContext, program, NB_SAMPLES);
-
-    // >>> Draw to screen
-    glContext.drawFullscreenQuad();
+    return texture;
 }
 
 // Main
@@ -151,8 +190,7 @@ function main() {
     // Retrieve shader
     apiCall('api/shader', 'GET', {}, function(data) {
         if(data.ok) {
-            var program = createProgram(glContext.context, fullscreenVertexShader, data.result);
-            drawScene(glContext, program);
+            // TODO:
 
         } else {
             console.log("Failed to retrieve shader");
