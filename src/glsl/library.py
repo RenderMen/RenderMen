@@ -35,6 +35,19 @@ ray_intersection_dist;
 """
 
 
+# ------------------------------------------------------------------------------ GLSL MATERIAL ATTRIBUTE
+
+glsl_global_attrs = """
+
+vec3
+attr_pos;
+
+vec3
+attr_normal;
+
+"""
+
+
 # ------------------------------------------------------------------------------ GLSL RAY LAUNCH
 
 def glsl_intersect(scene):
@@ -52,7 +65,7 @@ ray_intersect()
         code_tmplt_prim = """
     if ({glsl} == 1)
     {{
-        ray_color = vec3(0.0, 0.0, 1.0);
+        ray_color = attr_normal * 0.5 + 0.5;
     }}
         """
 
@@ -90,6 +103,8 @@ def glsl_main(scene):
     code_tmplt = """
 
 varying vec4 position;
+varying float w;
+varying float h;
 
 void
 main()
@@ -99,10 +114,14 @@ main()
     float camera_field_of_view = {camera_field_of_view};
 
     float far = 1.0;
-    float aspect = 1.0;
+    float aspect = w / h;
+
+    gl_FragColor = vec4(w, w, w, 1.0);
+
+    return;
 
     float xx = tan(camera_field_of_view / 2.0) * far;
-    float yy = tan(camera_field_of_view / 2.0) * far;
+    float yy = tan(camera_field_of_view / 2.0) * far * aspect;
 
     vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
     vec3 v = cross(u, camera_dir);
@@ -134,6 +153,7 @@ def main(scene):
 
     glsl_code += glsl_header
     glsl_code += glsl_global_ray
+    glsl_code += glsl_global_attrs
     glsl_code += primitives.glsl_code
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
