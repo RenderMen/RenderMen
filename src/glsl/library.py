@@ -1,5 +1,6 @@
 
 import utils
+import primitives
 
 # ------------------------------------------------------------------------------ GLSL HEADER
 
@@ -34,63 +35,32 @@ ray_intersection_dist;
 """
 
 
-# ------------------------------------------------------------------------------ GLSL SPHERE
-#
-# sphere is a vec4(center, radius)
-#
-
-glsl_sphere_code = """
-
-void
-object_sphere(vec4 sphere)
-{
-    vec3 oc = sphere.xyz - ray_origin;
-
-    float b = dot(oc, ray_dir);
-    float det = b * b - dot(oc, oc) + sphere.w * sphere.w;
-
-    if (det <= 0.0)
-    {
-        return;
-    }
-
-    float distance = b - sqrt(det);
-
-    if ((distance > MATH_EPSILON) && (distance < ray_intersection_dist))
-    {
-        ray_intersection_dist = distance;
-        ray_color = vec3(0.0, 0.0, 1.0);
-    }
-}
-
-"""
-
-
 # ------------------------------------------------------------------------------ GLSL RAY LAUNCH
 
 def glsl_intersect(scene):
-    code_function_tmplt = """
-
+    code_tmplt = """
 void
 ray_intersect()
 {{
     {code_content}
 }}
-
-"""
-
-    code_tmplt_sphere = """
-    object_sphere({sphere});
     """
 
     code_content = ""
 
     for prim in scene.primitives:
-        code_content += code_tmplt_sphere.format(
-            sphere=utils.code_vec(prim.vec4)
+        code_tmplt_prim = """
+    if ({glsl} == 1)
+    {{
+        ray_color = vec3(0.0, 0.0, 1.0);
+    }}
+        """
+
+        code_content += code_tmplt_prim.format(
+            glsl=prim.glsl()
         )
 
-    return code_function_tmplt.format(
+    return code_tmplt.format(
         code_content=code_content
     )
 
@@ -148,7 +118,7 @@ def main(scene):
 
     glsl_code += glsl_header
     glsl_code += glsl_global_ray
-    glsl_code += glsl_sphere_code
+    glsl_code += primitives.glsl_code
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
     glsl_code += glsl_main(scene)
