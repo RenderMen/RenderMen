@@ -1,5 +1,20 @@
-from flask import Flask, render_template
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import mongoengine
+from flask import Flask, render_template, session, request
+
+import config
+from model.user import User
+
+# Flask app
 app = Flask(__name__)
+
+# DB init
+mongoengine.connect(config.db_name)
+User.drop_collection()
+dummy = User.new_user('test@test.com', 'password')
+dummy.save()
 
 @app.route("/")
 def hello():
@@ -16,4 +31,4 @@ def shader():
     return code
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run('0.0.0.0', 5000, debug=True)

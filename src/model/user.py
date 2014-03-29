@@ -10,7 +10,6 @@ def hash_password(password, salt):
 
 class User(mongoengine.Document):
     email = mongoengine.StringField(primary_key=True)
-    password = mongoengine.StringField(required=True)
     salt = mongoengine.StringField(required=True)
     secret_hash = mongoengine.StringField(required=True)
     credits = mongoengine.IntField(default=50)
