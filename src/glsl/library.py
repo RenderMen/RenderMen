@@ -117,10 +117,15 @@ def glsl_main(scene):
 varying vec4 position;
 uniform float width;
 uniform float height;
+uniform vec2 offset;
+uniform float nb_samples;
+uniform float sample_id;
 
 void
 main()
 {{
+    random_seed = noise3D(vec3(position.x, position.y, sample_id));
+
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
@@ -136,13 +141,13 @@ main()
 
     vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
 
-    vec3 pos = c + xx * position.x * u + yy * position.y * v;
+    vec3 pos = c + (xx * (position.x + offset.x)) * u + (yy * (position.y + offset.y)) * v;
 
     ray_dir = normalize(pos - camera_origin);
 
     vec3 ray_color = ray_launch(pos, camera_dir);
 
-    gl_FragColor = vec4(ray_color, 1.0);
+    gl_FragColor = vec4(ray_color / nb_samples, 1.0);
 }}
 
 """

@@ -53,8 +53,9 @@ function createFullscreenBuffer(gl)
     return buffer;
 }
 
+
 // Creates a framebuffer with a single color attachment
-function createFramebuffer(gl)
+function Framebuffer(gl)
 {
     assert(gl, "Invalid WebGL context");
 
@@ -62,8 +63,10 @@ function createFramebuffer(gl)
 
     var textureType = gl.FLOAT;
 
-    var colorTarget = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, colorTarget);
+    this.textures = new Array();
+
+    this.textures[0] = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.textures[0]);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -71,11 +74,11 @@ function createFramebuffer(gl)
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.drawingBufferWidth,
         gl.drawingBufferHeight, 0, gl.RGBA, textureType, null);
 
-    var fbo = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTarget, 0);
+    this.fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textures[0], 0);
 
-    if (!gl.isFramebuffer(fbo)) {
+    if (!gl.isFramebuffer(this.fbo)) {
         throw "Invalid framebuffer";
     }
 
@@ -100,7 +103,6 @@ function createFramebuffer(gl)
             throw "Incomplete framebuffer: " + status;
     }
 
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    return fbo;
 }

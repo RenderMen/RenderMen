@@ -13,6 +13,11 @@ noise2D(vec2 v)
     return fract(sin(dot(v.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+float
+noise3D(vec3 v)
+{
+    return fract(sin(dot(v.xyz, vec3(12.9898, 78.233, 42.5487))) * 43758.5453);
+}
 
 float
 random_seed;
