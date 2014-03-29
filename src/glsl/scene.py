@@ -26,7 +26,7 @@ class Scene(mongoengine.Document):
     title = mongoengine.StringField(primary_key=True)
     description = mongoengine.StringField(default=None)
     created_by = mongoengine.ReferenceField(User, required=True)
-    creation_time = mongoengine.DateTimeField(default=datetime.now)
+    date_created = mongoengine.DateTimeField(default=datetime.now)
 
 
     camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
@@ -50,6 +50,7 @@ class Rendering(mongoengine.Document):
     samples = mongoengine.IntField(required=True)
 
     scene = mongoengine.ReferenceField(Scene)
+    date_created = mongoengine.DateTimeField(default=datetime.now)
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)

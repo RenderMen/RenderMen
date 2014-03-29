@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from functools import wraps
+import json
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
@@ -10,6 +11,8 @@ from model.user import User, hash_password
 
 from glsl.scene import Rendering, Scene, boiler_scene
 
+# Monkey-patching mongoengine
+mongoengine.Document.to_dict = lambda d : json.loads(d.to_json())
 
 # Flask app
 app = Flask(__name__)
@@ -28,8 +31,8 @@ glsl_scene.save()
 another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
 another_glsl_scene.save()
 
-Rendering(width=600, height=400, samples=16, scene=glsl_scene).save()
-Rendering(width=600, height=400, samples=16, scene=another_glsl_scene).save()
+r1 = Rendering(width=600, height=400, samples=16, scene=glsl_scene).save()
+r2 = Rendering(width=600, height=400, samples=16, scene=another_glsl_scene).save()
 
 def requires_login(f):
     @wraps(f)
@@ -52,7 +55,7 @@ def load_request_user():
 
 # Pages
 @app.route("/")
-def hello():
+def index():
     return render_template('index.html')
 
 @app.route("/profile")
@@ -71,6 +74,12 @@ def add_scene():
 @app.route("/api/shader")
 def api_shader():
     return jsonify(ok=True, result=glsl_scene.composeGLSL())
+
+@app.route("/api/rendering/last")
+def api_rendering():
+    rendering = Rendering.objects().order_by('-date_created').first()
+    return jsonify(ok=True, result=rendering.to_dict())
+
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
