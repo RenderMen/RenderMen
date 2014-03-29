@@ -100,16 +100,27 @@ $(document).ready(function() {
 
     // Login btn
     $('#login-btn').click(function() {
-      console.log('hihi');
       var email = $('#login-email').val();
       var password = $('#login-password').val();
+
       apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
-        console.log(data);
+        if (!data.ok) {
+          return;
+        }
+
+        // Redirecting the user to the frontpage
+        window.location.replace('/');
       });
 
-      // Redirecting the user to the frontpage
-      window.location.replace('/')
     });
+
+    // Logout link
+    $('a.logout').click(function() {
+      apiCall('/api/logout', 'POST', {}, function(data) {
+        // Redirecting the user to the frontpage
+        window.location.replace('/');
+      });
+    })
 
     //testGetShader();
 });

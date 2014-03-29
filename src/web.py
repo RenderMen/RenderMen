@@ -64,6 +64,11 @@ def api_connect():
     except mongoengine.DoesNotExist:
         return jsonify(ok=False)
 
+@app.route("/api/logout", methods=['POST'])
+def logout():
+    session['logged_in'] = None
+    return jsonify(ok=True)
+
 def connect_user(user):
     session['logged_in'] = user.email
 
