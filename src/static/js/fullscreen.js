@@ -1,6 +1,8 @@
 var fullscreenVertexShader =
 "precision highp float; \
 attribute vec2 vertex; \
+uniform float width; \
+uniform float height; \
 varying vec2 texcoord; \
 varying vec4 position; \
 void \

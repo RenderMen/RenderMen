@@ -105,6 +105,8 @@ def glsl_main(scene):
     code_tmplt = """
 
 varying vec4 position;
+uniform float width;
+uniform float height;
 
 void
 main()
@@ -114,10 +116,10 @@ main()
     float camera_field_of_view = {camera_field_of_view};
 
     float far = 1.0;
-    float aspect = 1.0;
+    float aspect = width / height;
 
     float xx = tan(camera_field_of_view / 2.0) * far;
-    float yy = tan(camera_field_of_view / 2.0) * far;
+    float yy = tan(camera_field_of_view / 2.0) * far / aspect;
 
     vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
     vec3 v = cross(u, camera_dir);

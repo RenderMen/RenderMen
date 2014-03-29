@@ -7,8 +7,8 @@
         <ul class="nav navbar-nav pull-right">
             {% if user %}
             <li class="user">
-                <a href="#">
-                    {{user.email}} [{{user.credits}}]
+                <a href="/profile">
+                    <img src="{{user.picture}}?s=20" class="user-picture">{{user.email}} [{{user.credits}}]
                 </a>
             </li>
 
