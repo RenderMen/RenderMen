@@ -187,10 +187,19 @@ function main() {
     glContext = new GLContext();
     assert(glContext, "Failed to get WebGL context");
 
-    // Retrieve shader
-    apiCall('api/shader', 'GET', {}, function(data) {
+    // Retrieve a rendering to complete
+    apiCall('/api/rendering/first', 'GET', {}, function(data) {
         if(data.ok) {
-            // TODO:
+            var rendering = data.result;
+            var rendering_id = rendering['_id']['$oid'];
+            var $canvas = $('#renderCanvas');
+            $canvas.attr('width', rendering.width);
+            $canvas.attr('height', rendering.height);
+
+            // Fetching an assignment for that rendering
+            apiCall('/api/rendering/' + rendering_id + '/assignment', 'GET', {}, function(data) {
+                glContext.processAssignment(data.result.assignment, data.result.shader);
+            });
 
         } else {
             console.log("Failed to retrieve shader");

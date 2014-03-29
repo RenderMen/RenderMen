@@ -168,7 +168,7 @@ main()
     const float image_aspect_ratio = {image_aspect_ratio};
 
     const int render_width = {render_width};
-    const int render_heigth = {render_heigth};
+    const int render_heigth = {render_height};
     const int render_x = {render_x};
     const int render_y = {render_y};
 

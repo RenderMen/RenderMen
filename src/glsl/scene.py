@@ -44,28 +44,6 @@ class Scene(mongoengine.Document):
         super(Scene, self).save(*args, **kwargs)
 
 
-class Assignment(mongoengine.Document):
-    UNASSIGNED, ASSIGNED, DONE = range(3)
-
-    rendering_author = mongoengine.ReferenceField(User, required=True)
-
-    x = mongoengine.IntField(required=True)
-    y = mongoengine.IntField(required=True)
-    width = mongoengine.IntField(required=True)
-    height = mongoengine.IntField(required=True)
-    samples = mongoengine.IntField(required=True)
-
-    rendering = mongoengine.ReferenceField("Rendering", required=True)
-
-    date = mongoengine.DateTimeField(default=datetime.now)
-    status = mongoengine.IntField(default=UNASSIGNED)
-
-    pixels = mongoengine.ListField()
-
-    def save(self, *args, **kwargs):
-        self.rendering.save()
-        super(Assignment, self).save(*args, **kwargs)
-
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
@@ -74,10 +52,7 @@ class Rendering(mongoengine.Document):
     scene = mongoengine.ReferenceField(Scene)
     date_created = mongoengine.DateTimeField(default=datetime.now)
 
-    assignments = mongoengine.ListField(mongoengine.ReferenceField(Assignment), default=list)
-
     def get_assignment(self):
-        assert len(self.assignments) != 0
 
         for assignment in Assignment.objects(rendering=self):
             if assignment.status != Assignment.UNASSIGNED:
@@ -127,6 +102,31 @@ class Rendering(mongoengine.Document):
 
         return r
 
+
+class Assignment(mongoengine.Document):
+    UNASSIGNED, ASSIGNED, DONE = range(3)
+
+    rendering_author = mongoengine.ReferenceField(User, required=True)
+
+    x = mongoengine.IntField(required=True)
+    y = mongoengine.IntField(required=True)
+    width = mongoengine.IntField(required=True)
+    height = mongoengine.IntField(required=True)
+    samples = mongoengine.IntField(required=True)
+
+    rendering = mongoengine.ReferenceField("Rendering", required=True)
+
+    date = mongoengine.DateTimeField(default=datetime.now)
+    status = mongoengine.IntField(default=UNASSIGNED)
+
+    pixels = mongoengine.ListField()
+
+    def save(self, *args, **kwargs):
+        self.rendering.save()
+        super(Assignment, self).save(*args, **kwargs)
+
+    def composeGLSL(self):
+        return library.main(self.rendering.scene, self)
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)
