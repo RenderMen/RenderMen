@@ -118,6 +118,7 @@ varying vec4 position;
 uniform float width;
 uniform float height;
 uniform vec2 offset;
+uniform float nb_samples;
 
 void
 main()
@@ -143,7 +144,7 @@ main()
 
     vec3 ray_color = ray_launch(pos, camera_dir);
 
-    gl_FragColor = vec4(ray_color, 1.0);
+    gl_FragColor = vec4(ray_color / nb_samples, 1.0);
 }}
 
 """
