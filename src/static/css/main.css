@@ -91,12 +91,16 @@ a:hover {
     color: #BE4E12;
 }
 
-nav .coins {
+.pixels {
+    color: #0660FF;
+}
+
+nav .info-points {
     font-weight: bold;
     font-size: 11px;
 }
 
-nav .coins img {
+nav .info-points img {
     height: 20px;
 }
 

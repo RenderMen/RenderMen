@@ -1,3 +1,4 @@
+import mongoengine
 
 import utils
 
@@ -24,7 +25,9 @@ material_albedo(vec3 albedo)
 
 # ------------------------------------------------------------------------------ ABSTRACT CLASS
 
-class Abstract:
+class Abstract(mongoengine.Document):
+
+    meta = {'allow_inheritance': True}
 
     def code(self):
         assert False
@@ -34,8 +37,7 @@ class Abstract:
 
 class Emit(Abstract):
 
-    def __init__(self, color=[0.8, 0.8, 0.8]):
-        self.color = color
+    color = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.8, 0.8, 0.8])
 
     def code(self):
         code_tmplt = "ray_color = {color};"
@@ -48,8 +50,7 @@ class Emit(Abstract):
 
 class Diffuse(Abstract):
 
-    def __init__(self, albedo=[0.8, 0.8, 0.8]):
-        self.albedo = albedo
+    albedo = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.8, 0.8, 0.8])
 
     def code(self):
         code_tmplt = "material_albedo({albedo});"

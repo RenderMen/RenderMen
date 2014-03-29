@@ -1,6 +1,7 @@
+import mongoengine
 
 import utils
-
+import material
 
 # ------------------------------------------------------------------------------ GLSL SPHERE
 
@@ -63,21 +64,15 @@ intersect_plan(vec4 plan)
 
 # ------------------------------------------------------------------------------ ABSTRACT CLASS
 
-class Abstract:
+class Abstract(mongoengine.Document):
+    material = mongoengine.ReferenceField(material.Abstract, default=None)
 
-    def intersect_call(self):
-        assert False
+    meta = {'allow_inheritance': True}
 
-    def material_code(self):
-        assert False
-
-
-# ------------------------------------------------------------------------------ ABSTRACT MATERIAL CLASS
-
-class AbstractMaterial:
-
-    def __init__(self, material=None):
-        self.material = material
+    def save(self, *args, **kwargs):
+        if self.material:
+            self.material.save()
+        super(Abstract, self).save(*args, **kwargs)
 
     def material_code(self):
         if self.material == None:
@@ -89,19 +84,21 @@ class AbstractMaterial:
         return self.material.code()
 
 
+    def intersect_call(self):
+        assert False
+
+
+
 # ------------------------------------------------------------------------------ SPHERE
 
-class Sphere(AbstractMaterial):
+class Sphere(Abstract):
     """
         center = vec3
         radius = float
     """
 
-    def __init__(self, material=None, center=[0.0, 0.0, 0.0], radius=1.0):
-        AbstractMaterial.__init__(self, material=material)
-
-        self.center = center
-        self.radius = radius
+    center = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, 0.0, 0.0])
+    radius = mongoengine.FloatField(default=1.0)
 
     @property
     def vec4(self):
@@ -117,17 +114,14 @@ class Sphere(AbstractMaterial):
 
 # ------------------------------------------------------------------------------ PLAN
 
-class Plan(AbstractMaterial):
+class Plan(Abstract):
     """
         normal = vec3
         distance = float
     """
 
-    def __init__(self, material=None, normal=[0.0, 0.0, 1.0], distance=0.0):
-        AbstractMaterial.__init__(self, material=material)
-
-        self.normal = normal
-        self.distance = distance
+    normal = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, 0.0, 1.0])
+    distance = mongoengine.FloatField(default=0.0)
 
     @property
     def vec4(self):

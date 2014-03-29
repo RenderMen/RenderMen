@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import sys
+sys.path.append('..')
 
 import math
 import camera
@@ -7,25 +11,40 @@ import library
 import utils
 
 
-class Scene:
+from datetime import datetime
+
+import mongoengine
+
+from model.user import User
+
+class Scene(mongoengine.Document):
     """scene content
 
         camera = Camera()
         primitives = [primitives.Sphere]
     """
+    title = mongoengine.StringField(primary_key=True)
+    description = mongoengine.StringField(default=None)
+    created_by = mongoengine.ReferenceField(User, required=True)
+    creation_time = mongoengine.DateTimeField(default=datetime.now)
 
-    def __init__(self):
-        self.camera = camera.Camera()
-        self.primitives = []
+    camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
+    primitives = mongoengine.ListField(mongoengine.ReferenceField(primitives.Abstract), default=list)
 
     def add(self, primitive):
         self.primitives.append(primitive)
 
+    def save(self, *args, **kwargs):
+        self.camera.save()
+        for primitive in filter(lambda e : e is not None, self.primitives):
+            primitive.save()
+        super(Scene, self).save(*args, **kwargs)
+
     def composeGLSL(self):
         return library.main(self)
 
-def boiler_scene():
-    s = Scene()
+def boiler_scene(user, title, description):
+    s = Scene(created_by=user, title=title, description=description)
     s.camera.position[0] = -3
     s.camera.position[1] = -3
     s.camera.position[2] = 3
@@ -55,7 +74,7 @@ def boiler_scene():
     return s
 
 if __name__ == "__main__":
-    s = boiler_scene()
+    s = boiler_scene(user=None, title="dummy title", description="dummy description")
 
     glsl = s.composeGLSL()
 

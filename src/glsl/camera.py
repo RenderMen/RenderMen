@@ -1,7 +1,7 @@
-
+import mongoengine
 import math
 
-class Camera:
+class Camera(mongoengine.Document):
     """camera
 
         position = vec3
@@ -9,7 +9,6 @@ class Camera:
         field_of_view = float
     """
 
-    def __init__(self):
-        self.position = [0.0, -10.0, 0.0]
-        self.direction = [0.0, 1.0, 0.0]
-        self.field_of_view = math.pi * 0.5
+    position = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, -10.0, 0.0])
+    direction = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, 1.0, 0.0])
+    field_of_view = mongoengine.FloatField(default=math.pi * 0.5)
