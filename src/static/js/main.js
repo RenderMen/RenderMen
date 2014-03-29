@@ -6,8 +6,9 @@ function apiCall(path, method, params, callback) {
       dataType: "json",
       data: JSON.stringify(params),
       contentType: 'application/json;charset=UTF-8',
-      success: callback
+      complete: callback
     });
+
 }
 
 function main()
