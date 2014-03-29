@@ -1,9 +1,52 @@
+@font-face {
+  font-family: "OpenSans Regular";
+  src: url("../fonts/OpenSans/Regular/OpenSans-Regular.eot");
+  src:
+    url("../fonts/OpenSans/Regular/OpenSans-Regular.woff") format("woff"),
+    url("../fonts/OpenSans/Regular/OpenSans-Regular.otf") format("opentype"),
+    url("../fonts/OpenSans/Regular/OpenSans-Regular.svg") format("svg");
+}
+
+@font-face {
+    font-family: 'Cabin';
+    src: url('../fonts/Cabin/cabin-regular-webfont.eot');
+    src: url('../fonts/Cabin/cabin-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/Cabin/cabin-regular-webfont.woff') format('woff'),
+         url('../fonts/Cabin/cabin-regular-webfont.ttf') format('truetype'),
+         url('../fonts/Cabin/cabin-regular-webfont.svg#cabinregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Some changes to bootstrap's styles */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: inherit;
+}
+
+h1, h2, h3 {
+  margin-top: 10px;
+}
+
+.panel-body {
+  padding: 2px 10px 10px;
+}
+
+body {
+  font-family: "OpenSans Regular";
+  position: relative;
+}
+
+a {
+  text-decoration: none !important;
+}
+
 a:hover {
     text-decoration: none;
 }
 
-nav {
-    padding: 0 8px;
+.row {
+  margin: 0px 0px 0px -15px;
 }
 
 
@@ -11,6 +54,7 @@ nav {
     color: #212634;
     font-size: 20px;
     margin-top: 15px;
+    margin-left: 15px;
 
     transition: 0.55s all;
     -webkit-transition: 0.55s all;
