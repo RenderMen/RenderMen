@@ -4,6 +4,7 @@ import math
 import utils
 import primitives
 import material
+import glsl_noise
 import glsl_math
 
 
@@ -163,7 +164,7 @@ uniform float sample_id;
 void
 main()
 {{
-    random_seed = noise3D(vec3(position.x, position.y, sample_id)) * 187.0;
+    random_seed = snoise(vec3(position.x, position.y, sample_id));
 
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
@@ -205,6 +206,7 @@ def main(scene):
     glsl_code += glsl_header()
     glsl_code += glsl_global
 
+    glsl_code += glsl_noise.glsl_code
     glsl_code += glsl_math.glsl_code
     glsl_code += material.glsl_code
     glsl_code += primitives.glsl_code
