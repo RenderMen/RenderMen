@@ -44,20 +44,23 @@ class Scene(mongoengine.Document):
         super(Scene, self).save(*args, **kwargs)
 
 
-class Assigment(mongoengine.Document):
+class Assignment(mongoengine.Document):
+    UNASSIGNED, ASSIGNED, DONE = range(3)
+
+    rendering_author = mongoengine.ReferenceField(User, required=True)
+
     x = mongoengine.IntField(required=True)
     y = mongoengine.IntField(required=True)
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
     samples = mongoengine.IntField(required=True)
-    date = mongoengine.DateTimeField()
-    status = mongoengine.StringField(default="unassigned")
 
     rendering = mongoengine.ReferenceField("Rendering", required=True)
 
-    def composeGLSL(self):
-        return library.main_assigment(self)
+    date = mongoengine.DateTimeField(default=datetime.now)
+    status = mongoengine.IntField(default=UNASSIGNED)
 
+    pixels = mongoengine.ListField()
 
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
@@ -67,15 +70,13 @@ class Rendering(mongoengine.Document):
     scene = mongoengine.ReferenceField(Scene)
     date_created = mongoengine.DateTimeField(default=datetime.now)
 
-    assignments = mongoengine.ListField(mongoengine.DateTimeField(), default=list)
+    assignments = mongoengine.ListField(mongoengine.ReferenceField(Assignment), default=list)
 
     def get_assignment(self):
         assert len(self.assignments) != 0
 
-        current = datetime.datetime.now()
-
         for assignment in self.assignments:
-            if assignment.status != "unassigned":
+            if assignment.status != Assignment.UNASSIGNED:
                 continue
 
             return assignment
@@ -116,13 +117,17 @@ class Rendering(mongoengine.Document):
             assert a_width < width
             assert a_height < height
 
-            a = Assigment(
+            a = Assignment(
                 x=x,
                 y=y,
                 width=a_width,
                 height=a_height,
                 samples=samples,
+<<<<<<< HEAD
                 rendering=rendering
+=======
+                rendering_author=r.scene.created_by
+>>>>>>> dev
             )
 
             r.assignments.append(a)
