@@ -7,7 +7,7 @@ from flask import Flask, render_template, session, request, jsonify
 import config
 from model.user import User, hash_password
 
-from glsl.scene import Scene
+from glsl.scene import boiler_scene
 
 
 # Flask app
@@ -20,7 +20,7 @@ dummy = User.new_user('test@test.com', 'password')
 dummy.save()
 
 # GLSL init
-glsl_scene = Scene()
+glsl_scene = boiler_scene()
 
 @app.route("/")
 def hello():

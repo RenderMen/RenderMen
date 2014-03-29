@@ -10,7 +10,7 @@ glsl_header = """
 precision highp float;
 
 #define MATH_FAR 10000.0
-#define MATH_EPSILONE 0.0001
+#define MATH_EPSILON 0.0001
 
 """
 
@@ -56,7 +56,7 @@ object_sphere(vec4 sphere)
 
     float distance = b - sqrt(det);
 
-    if ((distance > MATH_EPSILONE) && (distance < ray_intersection_dist))
+    if ((distance > MATH_EPSILON) && (distance < ray_intersection_dist))
     {
         ray_intersection_dist = distance;
         ray_color = vec3(0.0, 0.0, 1.0);
@@ -125,7 +125,7 @@ main()
 {{
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
-    float camera_fill_of_view = {camera_fill_of_view};
+    float camera_field_of_view = {camera_field_of_view};
 
     vec3 ray_color = ray_launch(camera_origin, camera_dir);
 
@@ -137,7 +137,7 @@ main()
     return code_tmplt.format(
         camera_origin=utils.code_vec(scene.camera.position),
         camera_dir=utils.code_vec(scene.camera.direction),
-        camera_fill_of_view=scene.camera.fill_of_view
+        camera_field_of_view=scene.camera.field_of_view
     )
 
 
