@@ -20,6 +20,15 @@ material_albedo(vec3 albedo)
     ray_continue(new_ray_dir);
 }
 
+void
+material_mirror(vec3 albedo)
+{
+    vec3 new_ray_dir = reflect(ray_dir, attr_normal);
+    ray_color = albedo;
+
+    ray_continue(new_ray_dir);
+}
+
 """
 
 
@@ -58,3 +67,17 @@ class Diffuse(Abstract):
         return code_tmplt.format(
             albedo=utils.code_vec(self.albedo)
         )
+
+# ------------------------------------------------------------------------------ MIRROR MATERIAL
+
+class Mirror(Abstract):
+
+    albedo = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.8, 0.8, 0.8])
+
+    def code(self):
+        code_tmplt = "material_mirror({albedo});"
+
+        return code_tmplt.format(
+            albedo=utils.code_vec(self.albedo)
+        )
+
