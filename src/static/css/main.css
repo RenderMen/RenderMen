@@ -24,6 +24,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: inherit;
 }
 
+.big-title {
+    letter-spacing: -1px;
+    font-weight: bold;
+}
+
 h1, h2, h3 {
   margin-top: 10px;
 }
@@ -49,6 +54,7 @@ a:hover {
   margin: 0px 0px 0px -15px;
 }
 
+/* Header */
 
 .sitename {
     color: #212634;
@@ -76,4 +82,23 @@ a:hover {
     margin-right: 5px;
     border: 1px solid #FFF;
     box-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.coins {
+    color: #BE4E12;
+}
+
+nav .coins {
+    font-weight: bold;
+    font-size: 11px;
+}
+
+nav .coins img {
+    height: 20px;
+}
+
+/* Profile page */
+
+.big-username {
+    font-size: 54px;
 }
