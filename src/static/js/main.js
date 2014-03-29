@@ -28,7 +28,7 @@ $(document).ready(function() {
 
       apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
         if (!data.ok) {
-            $.notify("Incorrect email or password", 'error');
+            $.notify(data.error, 'error');
             return;
         }
 
