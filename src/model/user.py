@@ -20,6 +20,10 @@ class User(mongoengine.Document):
         secret_hash = hash_password(password, salt)
         return User(email=email, salt=salt, secret_hash=secret_hash)
 
+    def clean(self):
+        # Emails are case-insensitive
+        self.email = self.email.lower()
+
 if __name__ == '__main__':
     user = User.new_user('test@test.com', 'mypassword')
     assert user.email == 'test@test.com'

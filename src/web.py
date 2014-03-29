@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import mongoengine
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, jsonify
 
 import config
-from model.user import User
+from model.user import User, hash_password
 
 # Flask app
 app = Flask(__name__)
@@ -21,7 +21,7 @@ def hello():
     return render_template('index.html')
 
 @app.route("/api/shader")
-def shader():
+def api_shader():
     code = """
     void main()
     {
@@ -29,6 +29,21 @@ def shader():
     }
     """
     return code
+
+@app.route("/api/signin")
+def api_connect():
+    email, password = request.json['email'].lowercase(), request.json['password']
+    try:
+        user = User.objects.get(email=email)
+        if user.secret_hash == hash_password(password, user.salt):
+            connect_user(user)
+        else:
+            return jsonify(ok=False)
+    except mongoengine.DoesNotExist:
+        return jsonify(ok=False)
+
+def connect_user(user):
+    session['logged_in'] = user.email
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 5000, debug=True)
