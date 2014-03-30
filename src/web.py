@@ -124,7 +124,7 @@ def socket_assignment_completed(message):
     completed_pixels = int(assignment.width * assignment.height)
 
     g.user.pixels += completed_pixels
-    g.user.credits += math.sqrt(completed_pixels) / 10000000
+    g.user.credits += int(completed_pixels / 10000.0)
     g.user.save()
 
     rendering_author = assignment.rendering_author

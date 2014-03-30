@@ -17,7 +17,7 @@ class User(mongoengine.Document):
 
     salt = mongoengine.StringField(default=None)
     secret_hash = mongoengine.StringField(default=None)
-    credits = mongoengine.LongField(default=50)
+    credits = mongoengine.IntField(default=50)
     pixels = mongoengine.LongField(default=0)
     picture = mongoengine.StringField()
 
@@ -44,6 +44,15 @@ class User(mongoengine.Document):
         else:
             return str(self.pixels)
 
+
+    @property
+    def formatted_credits(self):
+        if self.credits >= 1000000:
+            return "{}M".format(self.pixels / 1000000.0)
+        elif self.credits >= 1000:
+            return "{}K".format(self.pixels / 1000.0)
+        else:
+            return str(self.credits)
 
 if __name__ == '__main__':
     user = User.new_user('test@test.com', 'mypassword')
