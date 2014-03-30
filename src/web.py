@@ -83,12 +83,15 @@ def socket_get_rendering(message):
 
 @socketio.on('get assignment', namespace='/rendering')
 def socket_get_assignment(message):
+    load_request_user()
+
     rendering = Rendering.objects.get(id=message['rendering_id'])
     assignment = rendering.get_assignment()
 
     if assignment:
         # Assigning to user
         assignment.status = Assignment.ASSIGNED
+        assignment.assigned_to = g.user
         assignment.date = datetime.now()
         assignment.save()
         # Join a room
