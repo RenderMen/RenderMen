@@ -109,19 +109,20 @@ ray_intersect()
 
 # ------------------------------------------------------------------------------ GLSL RAY LAUNCH
 
-glsl_ray_launch = """
+def glsl_ray_launch(assignment):
+    code_tmplt = """
 
 vec3
 ray_launch(vec3 origin, vec3 dir)
-{
+{{
     ray_origin = origin;
     ray_dir = dir;
     ray_color = vec3(0.0);
 
     vec3 frag_color = vec3(1.0);
 
-    for (int i = 0; i < 10; i++)
-    {
+    for (int i = 0; i < {max_iterations}; i++)
+    {{
         ray_intersection_dist = MATH_FAR;
         ray_next_iteration = 0;
 
@@ -130,23 +131,27 @@ ray_launch(vec3 origin, vec3 dir)
         frag_color *= ray_color;
 
         if (abs(ray_intersection_dist - MATH_FAR) < MATH_EPSILON)
-        {
+        {{
             break;
-        }
+        }}
 
         if (ray_next_iteration == 0)
-        {
+        {{
             return frag_color;
-        }
+        }}
 
         ray_dir = ray_next_dir;
         ray_origin = attr_pos + ray_dir * MATH_EPSILON;
-    }
+    }}
 
     return vec3(0.0);
-}
+}}
 
 """
+
+    return code_tmplt.format(
+        max_iterations=assignment.max_iterations
+    )
 
 
 # ------------------------------------------------------------------------------ GLSL MAIN
@@ -259,7 +264,7 @@ def main(scene, assignment):
     glsl_code += primitives.glsl_code
 
     glsl_code += glsl_intersect(scene)
-    glsl_code += glsl_ray_launch
+    glsl_code += glsl_ray_launch(assignment)
     glsl_code += glsl_main(scene, assignment)
 
     with open("shader.glsl", "w") as f:
