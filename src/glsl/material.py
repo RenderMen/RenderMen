@@ -100,19 +100,20 @@ material_transparent_front(vec3 albedo, float refractFactor)
 {
     Fresnel fresnel = calculateFresnel(attr_normal, ray_dir, 1.0 - refractFactor, refractFactor);
 
-    float russian_roulette = noise1D(attr_normal.x); //snoise(attr_normal);
+    float russian_roulette = random(); //noise1D(attr_normal.x); //snoise(attr_normal);
 
     if(russian_roulette < fresnel.transmissionCoefficient)
     {
         ray_color = albedo;
-        vec3 refl_ray_dir = reflect(ray_dir, attr_normal); //ray_dir - attr_normal * 2 * attr_normal * ray_dir;
+        vec3 refl_ray_dir = reflect(ray_dir, attr_normal);
+        //vec3 refl_ray_dir = ray_dir - attr_normal * 2.0 * attr_normal * ray_dir;
         ray_continue(refl_ray_dir);
         return;
     }
     else
     {
-        //vec3 new_ray_dir = calculateTransmissionDirection(attr_normal, ray_dir, 0.2, 0.8);//1.0 - refractFactor, refractFactor);
-        vec3 new_ray_dir = ray_dir;
+        vec3 new_ray_dir = calculateTransmissionDirection(attr_normal, ray_dir, 1.0 - refractFactor, refractFactor);
+        //vec3 new_ray_dir = ray_dir;
         ray_color = albedo;
         ray_continue(new_ray_dir);
         return;
@@ -130,15 +131,13 @@ material_transparent_back(vec3 albedo, float refractFactor)
 void
 material_transparent(vec3 albedo, float refractFactor)
 {
-    material_transparent_front(albedo, refractFactor);
-    return;
-
     if(dot(attr_normal, ray_dir) < 0.0) // Ray from outside
     {
         material_transparent_front(albedo, refractFactor);
     }
     else // Ray from inside
     {
+        ray_dir = -ray_dir;
         material_transparent_back(albedo, refractFactor);
     }
 }

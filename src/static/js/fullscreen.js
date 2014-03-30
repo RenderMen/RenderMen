@@ -18,10 +18,11 @@ var fullscreenFragmentShader =
 "precision highp float; \
 varying vec2 texcoord; \
 uniform sampler2D texture; \
+uniform float opacity; \
 void \
 main() \
 { \
-    gl_FragColor = texture2D(texture, texcoord); \
+    gl_FragColor = mix(vec4(1.0), texture2D(texture, texcoord), opacity); \
 } \
 ";
 

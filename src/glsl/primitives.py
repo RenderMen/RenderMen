@@ -20,7 +20,14 @@ intersect_sphere(vec4 sphere)
         return 0;
     }
 
-    float distance = b - sqrt(det);
+    float distance = 0.0;
+
+    if(dot(oc, oc) >= (sphere.w * sphere.w)) {
+        distance = b - sqrt(det);
+    } else {
+        distance = b + sqrt(det);
+    }
+
 
     if ((distance > MATH_EPSILON) && (distance < ray_intersection_dist))
     {
