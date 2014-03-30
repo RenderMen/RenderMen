@@ -5,7 +5,7 @@ import mongoengine
 
 import config
 from model.user import User
-from glsl.scene import Rendering, boiler_scene
+from glsl.scene import Rendering, boiler_scene, pyramide_scene
 
 def gen_db():
     # DB init
@@ -23,8 +23,12 @@ def gen_db():
     another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
     another_glsl_scene.save()
 
+    pyramideScene = pyramide_scene(dummy, title="Pyramide", description="Pyramide of balls")
+    pyramideScene.save()
+
     #Rendering.create(width=1000, height=600, samples=16, scene=glsl_scene).save()
-    Rendering.create(width=1200, height=600, samples=32, scene=another_glsl_scene, max_iterations=5).save()
+    Rendering.create(width=600, height=400, samples=64, scene=another_glsl_scene, max_iterations=5).save()
+    Rendering.create(width=600, height=400, samples=64, scene=pyramideScene, max_iterations=5).save()
 
     print '. Generated dummy data !'
 

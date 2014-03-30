@@ -318,13 +318,13 @@ function main() {
             return;
         }
 
-        glContext.drawPixels(data.assignment, data.assignment.pixels, 0);
+        glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
 
     socket.on('previous assignments', function(data) {
         console.log(data);
         $.each(data.assignments, function(i, assignment) {
-            glContext.drawPixels(assignment, assignment.pixels, 0);
+            glContext.drawPixels(assignment, assignment.pixels);
         })
     });
 
