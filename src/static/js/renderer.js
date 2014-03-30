@@ -164,16 +164,23 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     return texture;
 }
 
-GLContext.prototype.drawFullscreenQuad = function(texture) {
+GLContext.prototype.drawFullscreenQuad = function(texture, opacity) {
+    opacity = opacity || 1.0;
+
     var gl = this.context;
 
     var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
     assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
 
+    var opacityLoc = gl.getUniformLocation(this.fullscreenProgram, "opacity");
+    assert(opacityLoc != -1, "Invalid location of uniform \"opacity\"");
+
     gl.useProgram(this.fullscreenProgram);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.enableVertexAttribArray(vertexLoc);
+
+    gl.uniform1f(opacityLoc, opacity);
 
     gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -227,7 +234,7 @@ GLContext.prototype.getPixels = function(assignment, texture) {
     return pixel_array;
 }
 
-GLContext.prototype.drawPixels = function(assignment, pixel_array) {
+GLContext.prototype.drawPixels = function(assignment, pixel_array, opacity) {
     var pixels = new Uint8Array(pixel_array);
     var gl = this.context;
 
@@ -248,7 +255,7 @@ GLContext.prototype.drawPixels = function(assignment, pixel_array) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    this.drawFullscreenQuad(integerTexture);
+    this.drawFullscreenQuad(integerTexture, opacity);
 
     gl.deleteTexture(integerTexture);
 }
@@ -311,16 +318,18 @@ function main() {
     });
 
     socket.on('incoming assignment', function(data) {
-        console.log('incoming !');
-        console.log(data);
-        glContext.drawPixels(data.assignment, data.assignment.pixels);
+        if ($("#user-info").attr("data-email") == data.assignment.assigned_to)
+        {
+            return;
+        }
+
+        glContext.drawPixels(data.assignment, data.assignment.pixels, 0.5);
     });
 
     socket.on('previous assignments', function(data) {
         console.log(data);
         $.each(data.assignments, function(i, assignment) {
-            console.log(assignment);
-            glContext.drawPixels(assignment, assignment.pixels);
+            glContext.drawPixels(assignment, assignment.pixels, 0.5);
         })
     });
 
