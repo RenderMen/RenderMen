@@ -15,7 +15,12 @@ class Camera(mongoengine.Document):
     look_at = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, 0.0, 0.0])
     field_of_view = mongoengine.FloatField(default=math.pi * 0.33)
     near_plan = mongoengine.FloatField(default=1.0)
+    blur_factor = mongoengine.FloatField(default=0.5)
 
     @property
     def direction(self):
         return utils.normalize(utils.sub(self.look_at, self.look_from))
+
+    @property
+    def focal_distance(self):
+        return utils.length(utils.sub(self.look_at, self.look_from))

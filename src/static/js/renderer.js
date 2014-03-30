@@ -123,14 +123,14 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     //>>> Send uniforms
     gl.uniform1f(nbSamplesLoc, samples * samples); // Number of samples
 
-    var pixelWidth = 2 / render_width;
-    var pixelHeight = 2 / render_height;
+    var pixelWidth = 2.0 / render_width.toFixed(2);
+    var pixelHeight = 2.0 / render_height.toFixed(2);
 
-    var xStep = pixelWidth / samples;
-    var yStep = pixelHeight / samples;
+    var xStep = pixelWidth / samples.toFixed(2);
+    var yStep = pixelHeight / samples.toFixed(2);
 
-    var halfPixelWidth = pixelWidth / 2;
-    var halfPixelHeight = pixelHeight / 2;
+    var halfPixelWidth = pixelWidth * 0.5;
+    var halfPixelHeight = pixelHeight * 0.5;
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
@@ -140,8 +140,8 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     {
         for(var j = 0; j < samples; j++)
         {
-            var xOffset = -halfPixelWidth + j * xStep;
-            var yOffset = halfPixelHeight - i * yStep;
+            var xOffset = - halfPixelWidth + (j + 0.5) * xStep;
+            var yOffset = - halfPixelHeight + (i + 0.5) * yStep;
 
             gl.uniform2f(offsetLoc, xOffset, yOffset);
             gl.uniform1f(sampleId, i * samples + j);
