@@ -44,7 +44,10 @@ def load_request_user():
 # Pages
 @app.route("/")
 def index():
-    return render_template('index.html')
+    if g.user:
+        return render_template('index.html')
+    else:
+        return render_template('welcome.html')
 
 @app.route("/profile")
 @requires_login
