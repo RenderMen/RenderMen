@@ -61,6 +61,10 @@ class Rendering(mongoengine.Document):
 
         return None
 
+    def progress(self):
+        assignments = Assignment.objects(rendering=self)
+        return len([a for a in assignments if a.status == Assignment.DONE]) / float(len(assignments))
+
     @staticmethod
     def create(scene, width, height, samples, max_iterations):
         assert width != 0

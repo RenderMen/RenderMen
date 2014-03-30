@@ -59,7 +59,8 @@ def auto_render():
 @app.route("/renderings")
 @requires_login
 def renderings():
-    return render_template('index.html')
+    renderings = Rendering.objects()
+    return render_template('renderings.html', renderings=renderings)
 
 @app.route("/profile")
 @requires_login
@@ -72,6 +73,8 @@ def profile():
 @requires_login
 def add_scene():
     return render_template('add_scene.html')
+
+
 
 # SocketIO
 @socketio.on('connect', namespace='/rendering')
@@ -156,10 +159,11 @@ def api_rendering(rendering_id):
 @app.route("/api/login", methods=['POST'])
 def api_connect():
     username = request.json['username'].lower().strip()
-    user, created = User.objects.get_or_create(username=username, email='{}@fhacktory.com'.format(username))
+    user, created = User.objects.get_or_create(username=username)
     app.logger.info(user)
     app.logger.info(username)
     if created:
+        user.email = '{}@fhacktory.com'.format(username)
         user.save()
     connect_user(user)
     return jsonify(ok=True)
