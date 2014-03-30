@@ -4,7 +4,7 @@
 
 <div class="container">
 
-    <div id="rendering" data-id="{{rendering.id}}"></div>
+    <div id="rendering" data-id="{{rendering.id}}" data-width="{{rendering.width}}" data-height="{{rendering.height}}" data-samples="{{rendering.samples}}"></div>
 
     <h1 class="big-title">
         {{rendering.scene.title}} <small>({{rendering.width}} x {{rendering.height}} - {{rendering.scene.primitives|length}} shapes - {{rendering.samples}}x{{rendering.samples}} sampling)</small>
@@ -17,7 +17,7 @@
     <div id="user-info" data-email="{{user.email}}"></div>
 
     <!-- Main canvas -->
-    <canvas id="renderCanvas" width="1024" height="512" style="border:1px solid #000000;">
+    <canvas id="renderCanvas" width="1024" height="512">
       Your browser does not support HTML5 canvas.
     </canvas>
 
