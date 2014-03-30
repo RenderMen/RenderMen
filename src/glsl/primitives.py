@@ -25,7 +25,8 @@ intersect_sphere(vec4 sphere)
     if(dot(oc, oc) >= (sphere.w * sphere.w)) {
         distance = b - sqrt(det);
     } else {
-        distance = b + sqrt(det);
+        //distance = b + sqrt(det);
+        distance = b - sqrt(det);
     }
 
 

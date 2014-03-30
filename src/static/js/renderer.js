@@ -49,7 +49,7 @@ GLContext.prototype.processAssignment = function(assignment, shaderCode) {
     return pixels;
 }
 
-// Draw into the glContext framebuffer nbSamples times using the given program
+// Launch the pathtracing algorithm with the given program
 GLContext.prototype.rayTrace = function(assignment, program) {
     var gl = this.context;
 
