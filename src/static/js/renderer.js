@@ -247,13 +247,9 @@ GLContext.prototype.drawPixels = function(assignment, pixel_array) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, render_width, render_height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, integerTexture, 0);
-
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     this.drawFullscreenQuad(integerTexture);
 
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.deleteTexture(integerTexture);
 }
 
@@ -279,8 +275,12 @@ function main() {
         $canvas.attr('width', rendering.width);
         $canvas.attr('height', rendering.height);
 
+        // Fetching previous completed assignments for this rendering
+        socket.emit('get previous assignments', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
         // Fetching an assignment for this rendering
         socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
     });
 
     socket.on('new assignment', function(data) {
@@ -311,8 +311,19 @@ function main() {
     });
 
     socket.on('incoming assignment', function(data) {
+        console.log('incoming !');
+        console.log(data);
         glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
+
+    socket.on('previous assignments', function(data) {
+        console.log(data);
+        $.each(data.assignments, function(i, assignment) {
+            console.log(assignment);
+            glContext.drawPixels(assignment, assignment.pixels);
+        })
+    });
+
 }
 
 

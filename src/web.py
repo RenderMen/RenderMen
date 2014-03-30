@@ -121,6 +121,16 @@ def socket_assignment_completed(message):
 
     return jsonify(ok=True)
 
+
+@socketio.on('get previous assignments', namespace='/rendering')
+def socket_previous_assignments(message):
+    rendering = Rendering.objects.get(id=message['rendering_id'])
+    assignments = [a.to_dict() for a in Assignment.objects(rendering=rendering, status=Assignment.DONE)]
+
+    emit('previous assignments', dict(assignments=assignments))
+
+    return jsonify(ok=True)
+
 # API
 @app.route("/api/rendering/<rendering_id>")
 @requires_login
