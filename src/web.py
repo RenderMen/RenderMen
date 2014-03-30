@@ -7,7 +7,7 @@ from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
-from flask.ext.socketio import SocketIO, emit, send
+from flask.ext.socketio import SocketIO, emit
 
 
 import config
@@ -71,7 +71,7 @@ def socket_connect():
     pass
 
 @socketio.on('get rendering', namespace='/rendering')
-def socket_rendering(message):
+def socket_get_rendering(message):
     available_renderings = [r for r in Rendering.objects().order_by('-date_created')
                             if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
     if available_renderings:
@@ -82,7 +82,7 @@ def socket_rendering(message):
         return emit('new rendering', dict(ok=False))
 
 @socketio.on('get assignment', namespace='/rendering')
-def socket_assignment(message):
+def socket_get_assignment(message):
     rendering = Rendering.objects.get(id=message['rendering_id'])
     assignment = rendering.get_assignment()
 
@@ -96,60 +96,13 @@ def socket_assignment(message):
     else:
         emit('new assignment', dict(ok=False, result=dict(completed=True)))
 
-# API
-@app.route("/api/shader")
-def api_shader():
-    rendering = Rendering.objects().order_by('-date_created').first()
-    return jsonify(ok=True, result=rendering.scene.composeGLSL())
+@socketio.on('assignment completed', namespace='/rendering')
+def socket_assignment_completed(message):
+    load_request_user()
 
-@app.route("/api/rendering/first")
-@requires_login
-def api_first_rendering():
-    available_renderings = [r for r in Rendering.objects().order_by('-date_created')
-                            if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
-    if available_renderings:
-        rendering_dict = available_renderings[0].to_dict()
-        # rendering_dict['completion'] = rendering.completion
-        return jsonify(ok=True, result=rendering_dict)
-    else:
-        return jsonify(ok=False)
-
-@app.route("/api/rendering/<rendering_id>")
-@requires_login
-def api_rendering(rendering_id):
-    rendering = Rendering.objects.get(id=rendering_id)
-    rendering_dict = rendering.to_dict()
-    # rendering_dict['completion'] = rendering.completion
-
-    return jsonify(ok=True, result=rendering_dict)
-
-@app.route("/api/rendering/<rendering_id>/assignment")
-@requires_login
-def api_get_assignment(rendering_id):
-    rendering = Rendering.objects.get(id=rendering_id)
-    assignment = rendering.get_assignment()
-
-    if assignment:
-        # Assigning to user
-        assignment.status = Assignment.ASSIGNED
-        assignment.date = datetime.now()
-        assignment.save()
-        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
-        return jsonify(ok=True, result=result)
-    else:
-        return jsonify(ok=True, result=dict(completed=True))
-
-
-@app.route("/api/assignment/<assignment_id>/completed", methods=['POST'])
-@requires_login
-def complete_assignment(assignment_id):
-    assignment = Assignment.objects.get(id=assignment_id)
+    assignment = Assignment.objects.get(id=message['assignment_id'])
     assignment.status = Assignment.DONE
-    print request
-    print request.form
-    raw_pixels = request.json['pixels']
-    print raw_pixels
-    assignment.pixels = raw_pixels
+    assignment.pixels = [ord(c) for c in message['pixels']]
     assignment.save()
 
     completed_pixels = int(assignment.width * assignment.height)
@@ -163,6 +116,17 @@ def complete_assignment(assignment_id):
     rendering_author.save()
 
     return jsonify(ok=True)
+
+# API
+@app.route("/api/rendering/<rendering_id>")
+@requires_login
+def api_rendering(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    rendering_dict = rendering.to_dict()
+    # rendering_dict['completion'] = rendering.completion
+
+    return jsonify(ok=True, result=rendering_dict)
+
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():

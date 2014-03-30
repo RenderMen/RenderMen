@@ -119,7 +119,7 @@ class Assignment(mongoengine.Document):
     date = mongoengine.DateTimeField(default=datetime.now)
     status = mongoengine.IntField(default=UNASSIGNED)
 
-    pixels = mongoengine.ListField()
+    pixels = mongoengine.ListField(mongoengine.IntField())
 
     def save(self, *args, **kwargs):
         self.rendering.save()

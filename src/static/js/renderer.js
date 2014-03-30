@@ -224,6 +224,9 @@ GLContext.prototype.getPixels = function(assignment, texture) {
         pixel_array[i] = pixels[i];
     }
 
+    console.log(pixels);
+    console.log(pixel_array);
+
     return pixel_array;
 }
 
@@ -278,12 +281,12 @@ function main() {
         console.log('CALLING');
         //console.log(pixels);
         PIXELS = pixels;
-        // rawApiCall('/api/assignment/' + assignment._id.$oid + '/completed', 'POST', {pixels: pixels}, function(data) {
-        //     console.log('COMPLETED ! ');
-        // })
 
         // And once that's done, we look for another assignment
         socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
+        // We send the rendered pixels to the server
+        socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
     });
 }
 

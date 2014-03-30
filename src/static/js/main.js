@@ -14,16 +14,12 @@ function apiCall(path, method, params, callback) {
     request.success(callback);
 }
 
-function rawApiCall(path, method, bytesArray, callback) {
-  var request = $.ajax({
-     url: path,
-     type: method,
-     contentType: 'application/octet-stream',
-     data: bytesArray,
-     processData: false
-  });
-  request.success(callback);
-
+function byteToString(bytearray) {
+  var result = new Array(bytearray.length);
+  for (var i = 0; i < bytearray.length; i++) {
+    result[i] = String.fromCharCode(bytearray[i]);
+  }
+  return result.join('');
 }
 
 // Main
