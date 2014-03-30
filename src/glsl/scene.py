@@ -9,6 +9,8 @@ import primitives
 import material
 import library
 import utils
+import datetime
+import config
 
 
 from datetime import datetime
@@ -26,7 +28,7 @@ class Scene(mongoengine.Document):
     title = mongoengine.StringField(primary_key=True)
     description = mongoengine.StringField(default=None)
     created_by = mongoengine.ReferenceField(User, required=True)
-    creation_time = mongoengine.DateTimeField(default=datetime.now)
+    date_created = mongoengine.DateTimeField(default=datetime.now)
 
 
     camera = mongoengine.ReferenceField(camera.Camera, default=camera.Camera)
@@ -41,8 +43,6 @@ class Scene(mongoengine.Document):
             primitive.save()
         super(Scene, self).save(*args, **kwargs)
 
-    def composeGLSL(self):
-        return library.main(self)
 
 class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
@@ -50,6 +50,83 @@ class Rendering(mongoengine.Document):
     samples = mongoengine.IntField(required=True)
 
     scene = mongoengine.ReferenceField(Scene)
+    date_created = mongoengine.DateTimeField(default=datetime.now)
+
+    def get_assignment(self):
+
+        for assignment in Assignment.objects(rendering=self):
+            if assignment.status != Assignment.UNASSIGNED:
+                continue
+
+            return assignment
+
+        return None
+
+    @staticmethod
+    def create(scene, width, height, samples):
+        assert width != 0
+        assert height != 0
+        assert samples != 0
+
+        r = Rendering(width=width, height=height, samples=samples, scene=scene)
+
+        count_width = int(math.ceil(float(width) / float(config.assigment_size)))
+        count_height = int(math.ceil(float(height) / float(config.assigment_size)))
+        count = count_width * count_height
+
+        assert count != 0
+
+        for i in range(0, count):
+            x = config.assigment_size * (i % count_width)
+            y = config.assigment_size * (i / count_width)
+
+            assert x < width
+            assert y < height
+
+            a_width = min(config.assigment_size, width - x)
+            a_height = min(config.assigment_size, height - y)
+
+            assert a_width < width
+            assert a_height < height
+
+            a = Assignment(
+                x=x,
+                y=y,
+                width=a_width,
+                height=a_height,
+                samples=samples,
+                rendering=r,
+                rendering_author=r.scene.created_by
+            )
+            a.save()
+
+        return r
+
+
+class Assignment(mongoengine.Document):
+    UNASSIGNED, ASSIGNED, DONE = range(3)
+
+    rendering_author = mongoengine.ReferenceField(User, required=True)
+
+    x = mongoengine.IntField(required=True)
+    y = mongoengine.IntField(required=True)
+    width = mongoengine.IntField(required=True)
+    height = mongoengine.IntField(required=True)
+    samples = mongoengine.IntField(required=True)
+
+    rendering = mongoengine.ReferenceField("Rendering", required=True)
+
+    date = mongoengine.DateTimeField(default=datetime.now)
+    status = mongoengine.IntField(default=UNASSIGNED)
+
+    pixels = mongoengine.ListField()
+
+    def save(self, *args, **kwargs):
+        self.rendering.save()
+        super(Assignment, self).save(*args, **kwargs)
+
+    def composeGLSL(self):
+        return library.main(self.rendering.scene, self)
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)

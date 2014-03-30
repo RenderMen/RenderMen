@@ -151,37 +151,57 @@ ray_launch(vec3 origin, vec3 dir)
 
 # ------------------------------------------------------------------------------ GLSL MAIN
 
-def glsl_main(scene):
+def glsl_main(scene, assignment):
     code_tmplt = """
 
 varying vec4 position;
-uniform float width;
-uniform float height;
 uniform vec2 offset;
 uniform float nb_samples;
 uniform float sample_id;
 
+
 void
 main()
 {{
-    random_seed = snoise(vec3(position.x, position.y, sample_id));
+    int image_width = {image_width};
+    int image_height = {image_height};
+    float image_aspect_ratio = {image_aspect_ratio};
+
+    int render_width = {render_width};
+    int render_height = {render_height};
+    int render_x = {render_x};
+    int render_y = {render_y};
 
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
 
+    vec2 screen_coord = position.xy * 0.5 + 0.5;
+
+    screen_coord.x *= float(render_width);
+    screen_coord.y *= float(render_height);
+
+    screen_coord.x += float(render_x);
+    screen_coord.y += float(render_y);
+
+    screen_coord.x /= float(image_width);
+    screen_coord.y /= float(image_height);
+
+    screen_coord = screen_coord * 2.0 - 1.0;
+
+    random_seed = snoise(vec3(screen_coord.x, screen_coord.y, sample_id));
+
     float far = 1.0;
-    float aspect = width / height;
 
     float xx = tan(camera_field_of_view / 2.0) * far;
-    float yy = tan(camera_field_of_view / 2.0) * far / aspect;
+    float yy = tan(camera_field_of_view / 2.0) * far / image_aspect_ratio;
 
     vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
     vec3 v = cross(u, camera_dir);
 
     vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
 
-    vec3 pos = c + (xx * (position.x + offset.x)) * u + (yy * (position.y + offset.y)) * v;
+    vec3 pos = c + (xx * (screen_coord.x + offset.x)) * u + (yy * (screen_coord.y + offset.y)) * v;
     vec3 dir = normalize(pos - camera_origin);
 
     vec3 ray_color = ray_launch(pos, dir);
@@ -191,7 +211,18 @@ main()
 
 """
 
+    image_aspect_ratio = float(assignment.rendering.width) / float(assignment.rendering.height)
+
     return code_tmplt.format(
+        image_width=assignment.rendering.width,
+        image_height=assignment.rendering.height,
+        image_aspect_ratio=image_aspect_ratio,
+
+        render_width=assignment.width,
+        render_height=assignment.height,
+        render_x=assignment.x,
+        render_y=assignment.y,
+
         camera_origin=utils.code_vec(scene.camera.position),
         camera_dir=utils.code_vec(scene.camera.direction),
         camera_field_of_view=scene.camera.field_of_view
@@ -200,7 +231,7 @@ main()
 
 # ------------------------------------------------------------------------------ MAIN
 
-def main(scene):
+def main(scene, assignment):
     glsl_code = ""
 
     glsl_code += glsl_header()
@@ -213,6 +244,9 @@ def main(scene):
 
     glsl_code += glsl_intersect(scene)
     glsl_code += glsl_ray_launch
-    glsl_code += glsl_main(scene)
+    glsl_code += glsl_main(scene, assignment)
+
+    with open("shader.glsl", "w") as f:
+        f.write(glsl_code)
 
     return glsl_code

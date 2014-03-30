@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from functools import wraps
+import json
+from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
@@ -8,28 +10,17 @@ from flask import Flask, render_template, session, request, jsonify, g, redirect
 import config
 from model.user import User, hash_password
 
-from glsl.scene import Rendering, Scene, boiler_scene
+from glsl.scene import Rendering, Scene, Assignment
 
+# Monkey-patching mongoengine
+mongoengine.Document.to_dict = lambda d : json.loads(d.to_json())
+
+# Connecting to the database
+mongoengine.connect(config.db_name)
 
 # Flask app
 app = Flask(__name__)
 app.secret_key = config.session_secret_key
-
-# DB init
-db = mongoengine.connect(config.db_name)
-db.drop_database(config.db_name)
-dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
-dummy.save()
-
-# GLSL init
-glsl_scene = boiler_scene(dummy, title="Dummy Scene", description="Just a random dummy scene")
-glsl_scene.save()
-
-another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
-another_glsl_scene.save()
-
-Rendering(width=600, height=400, samples=16, scene=glsl_scene).save()
-Rendering(width=600, height=400, samples=16, scene=another_glsl_scene).save()
 
 def requires_login(f):
     @wraps(f)
@@ -52,7 +43,7 @@ def load_request_user():
 
 # Pages
 @app.route("/")
-def hello():
+def index():
     return render_template('index.html')
 
 @app.route("/profile")
@@ -70,7 +61,66 @@ def add_scene():
 # API
 @app.route("/api/shader")
 def api_shader():
-    return jsonify(ok=True, result=glsl_scene.composeGLSL())
+    rendering = Rendering.objects().order_by('-date_created').first()
+    return jsonify(ok=True, result=rendering.scene.composeGLSL())
+
+@app.route("/api/rendering/first")
+@requires_login
+def api_first_rendering():
+    available_renderings = [r for r in Rendering.objects().order_by('-date_created')
+                            if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
+    if available_renderings:
+        rendering_dict = available_renderings[0].to_dict()
+        # rendering_dict['completion'] = rendering.completion
+        return jsonify(ok=True, result=rendering_dict)
+    else:
+        return jsonify(ok=False)
+
+@app.route("/api/rendering/<rendering_id>")
+@requires_login
+def api_rendering(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    rendering_dict = rendering.to_dict()
+    # rendering_dict['completion'] = rendering.completion
+
+    return jsonify(ok=True, result=rendering_dict)
+
+@app.route("/api/rendering/<rendering_id>/assignment")
+@requires_login
+def api_get_assignment(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    assignment = rendering.get_assignment()
+
+    if assignment:
+        # Assigning to user
+        assignment.status = Assignment.ASSIGNED
+        assignment.date = datetime.now()
+        assignment.save()
+        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
+        return jsonify(ok=True, result=result)
+    else:
+        return jsonify(ok=True, result=dict(completed=True))
+
+
+@app.route("/api/assignment/<assignment_id>/complete", methods=['POST'])
+@requires_login
+def complete_assignment(assignment_id):
+    assignment = Assignment.objects.get(id=assignment_id)
+    assignment.status = Assignment.DONE
+    # assignment.pixels = request.json['pixels']
+    assignment.save()
+
+    completed_pixels = int(assignment.width * assignment.height)
+
+    g.user.pixels += completed_pixels
+    g.user.credits += completed_pixels / 2
+    g.user.save()
+
+    rendering_author = assignment.rendering_author
+    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
+    rendering_author.save()
+
+    return jsonify(ok=True)
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
