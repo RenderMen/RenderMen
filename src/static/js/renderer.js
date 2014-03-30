@@ -234,7 +234,13 @@ function fetchAssignment() {
         }
 
         // Otherwise we process the given assignment
-        var pixels = glContext.processAssignment(data.result.assignment, data.result.shader);
+        var assignment = data.result.assignment;
+        var pixels = glContext.processAssignment(assignment, data.result.shader);
+
+        apiCall('/api/assignment/' + assignment._id.$oid + '/completed', 'POST', {pixels: pixels}, function(data) {
+            console.log('COMPLETED ! ');
+            console.log(data);
+        })
 
         // And once that's done, we look for another assignment
         fetchAssignment();
