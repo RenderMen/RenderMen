@@ -140,6 +140,7 @@ def boiler_scene(user, title, description):
     s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
     s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0))#, material=material.Glossy()))
     s.add(primitives.Cube(cubeMin=[2.0, -2.0, 1.0], cubeMax=[5.5, 2.0, 3.0], material=material.Mirror()))
+    s.add(primitives.Triangle(p1=[-1.0, 1.0, -1.0], p2=[1.0, 0.0, 0.0], p3=[0.0, 0.0, -1.0]))
 
     s.add(primitives.Plan(
         normal=[-1.0, 0.0, 0.0],

@@ -145,9 +145,9 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
 
             return 1;
         }
-
-        return 0;
     }
+
+    return 0;
 }
 
 int
