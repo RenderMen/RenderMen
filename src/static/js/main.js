@@ -24,7 +24,6 @@ function byteToString(bytearray) {
 
 // Main
 $(document).ready(function() {
-
   // Configures login dropdown menu
   $('.dropdown-menu').click(function(event) {
     event.stopPropagation();
@@ -68,6 +67,7 @@ $(document).ready(function() {
   // Logout link
   $('a.logout').click(function() {
     apiCall('/api/logout', 'POST', {}, function(data) {
+      console.log('okdsokfs');
       // Redirecting the user to the frontpage
       window.location.replace('/');
     });

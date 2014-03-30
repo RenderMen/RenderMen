@@ -7,7 +7,7 @@ from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
-from flask.ext.socketio import SocketIO, emit
+from flask.ext.socketio import SocketIO, emit, join_room
 
 
 import config
@@ -91,6 +91,8 @@ def socket_get_assignment(message):
         assignment.status = Assignment.ASSIGNED
         assignment.date = datetime.now()
         assignment.save()
+        # Join a room
+        join_room('rendering_{}'.format(message['rendering_id']))
         result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
         emit('new assignment', dict(ok=True, result=result))
     else:
@@ -114,6 +116,8 @@ def socket_assignment_completed(message):
     rendering_author = assignment.rendering_author
     rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
     rendering_author.save()
+
+    emit('incoming assignment', dict(assignment=assignment.to_dict()), room='rendering_{}'.format(assignment.rendering.id))
 
     return jsonify(ok=True)
 
@@ -166,5 +170,5 @@ def connect_user(user):
     load_template_user()
 
 if __name__ == "__main__":
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0', port=5000)
     # app.run('0.0.0.0', 5000, debug=True)
