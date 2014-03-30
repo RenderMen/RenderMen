@@ -137,15 +137,14 @@ def boiler_scene(user, title, description):
 
     s.add(primitives.Sphere(center=[0.0, 0.0, 10.0], radius=3.0, material=material.Emit(color=[12.0, 12.0, 12.0])))
     s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
-    s.add(primitives.Sphere(center=[-4.0, 3.0, 1.0], radius=1.0))#, material=material.Glossy()))
-    s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0))#, material=material.Mirror()))
+    s.add(primitives.Sphere(center=[-4.0, 3.0, 1.0], radius=1.0, material=material.Glossy(hardness=1.5)))
     s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0))#, material=material.Glossy()))
     s.add(primitives.Cube(cubeMin=[2.0, -2.0, 1.0], cubeMax=[5.5, 2.0, 3.0], material=material.Mirror()))
     #s.add(primitives.Triangle(A=[0.0, 0.0, 1.0], B=[1.0, 0.0, 1.0], C=[0.0, 1.0, 1.0]
             #, material=material.Mirror()))
             #))
 
-    s.add(primitives.Triangle(A=[-6.0, 5.0, 0.0], B=[-2.0, 5.0, 0.0], C=[-6.0, 5.0, 5.0]
+    s.add(primitives.Triangle(A=[-6.0, 5.0, 0.0], B=[-2.0, 5.0, 0.0], C=[-6.0, 6.0, 5.0]
         , material = material.Mirror()))
     #s.add(primitives.Triangle(A=[2.0, 0.0, 0.0], B=[2.0, 3.0, 0.0], C=[2.0, 0.0, 3.0],
         #material = material.Mirror()))
@@ -157,15 +156,15 @@ def boiler_scene(user, title, description):
     )  # X+
     s.add(primitives.Plan(
         normal=[1.0, 0.0, 0.0],
-        distance=-10.0,
+        distance=10.0,
         material=material.Diffuse(albedo=[0.25, 0.25, 0.75]))
     )  # X-
 
     s.add(primitives.Plan(normal=[0.0, -1.0, 0.0], distance=10.0, material=material.Diffuse()))  # Y+
-    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=-10.0, material=material.Diffuse()))  # Y-
+    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=10.0, material=material.Diffuse()))  # Y-
 
     s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0, material=material.Diffuse())) # Z+
-    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Diffuse()))   # Z-
+    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Glossy(hardness=1.4)))   # Z-
 
     return s
 

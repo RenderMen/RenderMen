@@ -120,7 +120,7 @@ ray_launch(vec3 origin, vec3 dir)
 
     vec3 frag_color = vec3(1.0);
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
         ray_intersection_dist = MATH_FAR;
         ray_next_iteration = 0;
