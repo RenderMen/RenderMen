@@ -224,8 +224,6 @@ GLContext.prototype.getPixels = function(assignment, texture) {
         pixel_array[i] = pixels[i];
     }
 
-    console.log(pixels);
-    console.log(pixel_array);
 
     return pixel_array;
 }
@@ -237,11 +235,9 @@ function main() {
 
     var socket = io.connect('/rendering');
 
-    console.log('ASKING FOR RENDERING');
     socket.emit('get rendering', '/rendering');
 
     socket.on('new rendering', function(data) {
-        console.log('GOT RENDERING');
         if(!data.ok) {
             console.log("Couldn't retrieve a rendering (all done ?)");
             return;
@@ -255,13 +251,10 @@ function main() {
         $canvas.attr('height', rendering.height);
 
         // Fetching an assignment for this rendering
-        console.log('ASKING FOR ASSIGNMENT');
         socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
     });
 
     socket.on('new assignment', function(data) {
-        console.log('GOT ASSIGNMENT');
-        console.log(data);
         if (!data.ok) {
             console.log("Couldn't fetch a rendering !");
             return;
@@ -278,7 +271,6 @@ function main() {
         var assignment = data.result.assignment;
         var pixels = glContext.processAssignment(assignment, data.result.shader);
 
-        console.log('CALLING');
         //console.log(pixels);
         PIXELS = pixels;
 
