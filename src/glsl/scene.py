@@ -48,6 +48,7 @@ class Rendering(mongoengine.Document):
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
     samples = mongoengine.IntField(required=True)
+    max_iterations = mongoengine.IntField(required=True)
 
     scene = mongoengine.ReferenceField(Scene)
     date_created = mongoengine.DateTimeField(default=datetime.now)
@@ -63,12 +64,12 @@ class Rendering(mongoengine.Document):
         return None
 
     @staticmethod
-    def create(scene, width, height, samples):
+    def create(scene, width, height, samples, max_iterations):
         assert width != 0
         assert height != 0
         assert samples != 0
 
-        r = Rendering(width=width, height=height, samples=samples, scene=scene)
+        r = Rendering(width=width, height=height, samples=samples, max_iterations=max_iterations, scene=scene)
 
         count_width = int(math.ceil(float(width) / float(config.assigment_size)))
         count_height = int(math.ceil(float(height) / float(config.assigment_size)))
@@ -95,6 +96,7 @@ class Rendering(mongoengine.Document):
                 width=a_width,
                 height=a_height,
                 samples=samples,
+                max_iterations=max_iterations,
                 rendering=r,
                 rendering_author=r.scene.created_by
             )
@@ -113,8 +115,9 @@ class Assignment(mongoengine.Document):
     width = mongoengine.IntField(required=True)
     height = mongoengine.IntField(required=True)
     samples = mongoengine.IntField(required=True)
+    max_iterations = mongoengine.IntField(required=True)
 
-    rendering = mongoengine.ReferenceField("Rendering", required=True)
+    rendering = mongoengine.ReferenceField(Rendering, required=True)
 
     date = mongoengine.DateTimeField(default=datetime.now)
     status = mongoengine.IntField(default=UNASSIGNED)
