@@ -89,10 +89,14 @@ def socket_connect():
 
 @socketio.on('disconnect', namespace='/rendering')
 def on_leave():
+    f = open('loglog', 'a+')
+    f.write('--\nin disconnect')
     load_request_user()
     for assignment in Assignment.objects(assigned_to=g.user, status=Assignment.ASSIGNED):
         assignment.status = Assignment.UNASSIGNED
         assignment.assigned_to = None
+        f.write('Cancelled one assignment\n')
+
 
 @socketio.on('get rendering', namespace='/rendering')
 def socket_get_rendering(message):

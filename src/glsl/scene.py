@@ -63,12 +63,12 @@ class Rendering(mongoengine.Document):
         return None
 
     def png(self):
-        path = renders_directory + self.id + ".png"
+        path = config.renders_directory + self.id + ".png"
 
         if os.path.isfile(path):
             return path
 
-        os.makedirs(renders_directory)
+        os.makedirs(config.renders_directory)
 
         array = list()
 
