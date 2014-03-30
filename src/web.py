@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import math
 from functools import wraps
 import json
 from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
+from flask.ext.socketio import SocketIO, emit, send
+
 
 import config
 from model.user import User, hash_password
@@ -21,6 +24,7 @@ mongoengine.connect(config.db_name)
 # Flask app
 app = Flask(__name__)
 app.secret_key = config.session_secret_key
+socketio = SocketIO(app)
 
 def requires_login(f):
     @wraps(f)
@@ -60,6 +64,37 @@ def profile():
 @requires_login
 def add_scene():
     return render_template('add_scene.html')
+
+# SocketIO
+@socketio.on('connect', namespace='/rendering')
+def socket_connect():
+    pass
+
+@socketio.on('get rendering', namespace='/rendering')
+def socket_rendering(message):
+    available_renderings = [r for r in Rendering.objects().order_by('-date_created')
+                            if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
+    if available_renderings:
+        rendering_dict = available_renderings[0].to_dict()
+        # rendering_dict['completion'] = rendering.completion
+        emit('new rendering', dict(ok=True, result=rendering_dict))
+    else:
+        return emit('new rendering', dict(ok=False))
+
+@socketio.on('get assignment', namespace='/rendering')
+def socket_assignment(message):
+    rendering = Rendering.objects.get(id=message['rendering_id'])
+    assignment = rendering.get_assignment()
+
+    if assignment:
+        # Assigning to user
+        assignment.status = Assignment.ASSIGNED
+        assignment.date = datetime.now()
+        assignment.save()
+        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
+        emit('new assignment', dict(ok=True, result=result))
+    else:
+        emit('new assignment', dict(ok=False, result=dict(completed=True)))
 
 # API
 @app.route("/api/shader")
@@ -110,13 +145,17 @@ def api_get_assignment(rendering_id):
 def complete_assignment(assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
     assignment.status = Assignment.DONE
-    # assignment.pixels = request.json['pixels']
+    print request
+    print request.form
+    raw_pixels = request.json['pixels']
+    print raw_pixels
+    assignment.pixels = raw_pixels
     assignment.save()
 
     completed_pixels = int(assignment.width * assignment.height)
 
     g.user.pixels += completed_pixels
-    g.user.credits += completed_pixels / 2
+    g.user.credits += math.sqrt(completed_pixels) / 10000000
     g.user.save()
 
     rendering_author = assignment.rendering_author
@@ -163,4 +202,5 @@ def connect_user(user):
     load_template_user()
 
 if __name__ == "__main__":
-    app.run('0.0.0.0', 5000, debug=True)
+    socketio.run(app)
+    # app.run('0.0.0.0', 5000, debug=True)

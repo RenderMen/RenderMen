@@ -17,8 +17,8 @@ class User(mongoengine.Document):
 
     salt = mongoengine.StringField(required=True)
     secret_hash = mongoengine.StringField(required=True)
-    credits = mongoengine.IntField(default=50)
-    pixels = mongoengine.IntField(default=0)
+    credits = mongoengine.LongField(default=50)
+    pixels = mongoengine.LongField(default=0)
     picture = mongoengine.StringField()
 
     @staticmethod
@@ -34,6 +34,15 @@ class User(mongoengine.Document):
 
         # Fetching pictures from gravatar
         self.picture = 'http://www.gravatar.com/avatar/{}'.format(hashlib.md5(self.email).hexdigest())
+
+    @property
+    def formatted_pixels(self):
+        if self.pixels >= 1000000:
+            return "{}M".format(self.pixels / 1000000.0)
+        elif self.pixels >= 1000:
+            return "{}K".format(self.pixels / 1000.0)
+        else:
+            return str(self.pixels)
 
 
 if __name__ == '__main__':
