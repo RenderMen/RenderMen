@@ -209,14 +209,22 @@ GLContext.prototype.getPixels = function(assignment, texture) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    var pixels = new Uint8Array(4 * render_width * render_height);
+    var pixel_count = 4 * render_width * render_height;
+    var pixels = new Uint8Array(pixel_count);
 
     gl.bindTexture(gl.TEXTURE_2D, integerTexture);
     gl.readPixels(0, 0, render_width, render_height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.deleteTexture(integerTexture);
 
-    return pixels;
+    var pixel_array = new Array();
+
+    for (var i = 0; i < pixel_count; i++)
+    {
+        pixel_array.push(pixels[i]);
+    }
+
+    return pixel_array;
 }
 
 function fetchAssignment() {
