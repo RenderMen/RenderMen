@@ -23,7 +23,7 @@ def gen_db():
     another_glsl_scene = boiler_scene(dummy, title="Another Dummy Scene", description="And here you go : yet another dummy scene.")
     another_glsl_scene.save()
 
-    #Rendering.create(width=1000, height=600, samples=32, max_iterations=8,, scene=glsl_scene).save()
+    #Rendering.create(width=1200, height=800, samples=128, max_iterations=8, scene=glsl_scene).save()
     Rendering.create(width=600, height=400, samples=32, max_iterations=8, scene=another_glsl_scene).save()
 
     print '. Generated dummy data !'

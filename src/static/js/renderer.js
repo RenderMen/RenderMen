@@ -96,7 +96,7 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     }
     // Use the pathtracing program
     gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -206,9 +206,6 @@ GLContext.prototype.getPixels = function(assignment, texture) {
 
     this.drawFullscreenQuad(texture);
 
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
     var pixel_count = 4 * render_width * render_height;
     var pixels = new Uint8Array(pixel_count);
 
@@ -216,6 +213,9 @@ GLContext.prototype.getPixels = function(assignment, texture) {
     gl.readPixels(0, 0, render_width, render_height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.deleteTexture(integerTexture);
+
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     var pixel_array = new Array(pixel_count);
 
@@ -255,7 +255,7 @@ GLContext.prototype.drawPixels = function(assignment, pixel_array) {
 
 // Main
 function main() {
-    glContext = new GLContext();
+    var glContext = new GLContext();
     assert(glContext, "Failed to get WebGL context");
 
     var socket = io.connect('/rendering');
@@ -301,7 +301,7 @@ function main() {
         var pixels = glContext.processAssignment(assignment, data.result.shader);
 
         //console.log(pixels);
-        PIXELS = pixels;
+        //PIXELS = pixels;
 
         // And once that's done, we look for another assignment
         socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
