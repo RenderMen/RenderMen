@@ -304,7 +304,7 @@ function main() {
         var pixels = glContext.processAssignment(assignment, data.result.shader);
 
         // We send the rendered pixels to the server
-        socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
+        //socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
 
         // And once that's done, we look for another assignment
         socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
@@ -318,13 +318,13 @@ function main() {
             return;
         }
 
-        glContext.drawPixels(data.assignment, data.assignment.pixels, 0.5);
+        glContext.drawPixels(data.assignment, data.assignment.pixels, 0);
     });
 
     socket.on('previous assignments', function(data) {
         console.log(data);
         $.each(data.assignments, function(i, assignment) {
-            glContext.drawPixels(assignment, assignment.pixels, 0.5);
+            glContext.drawPixels(assignment, assignment.pixels, 0);
         })
     });
 
