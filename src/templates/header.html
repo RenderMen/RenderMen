@@ -1,0 +1,46 @@
+<header>
+    <nav class="navbar navbar-default navbar-static-top">
+    <a href="/" class="sitename brand pull-left">
+        <span class="glyphicon glyphicon-eye-open logo"></span> RenderMen
+    </a>
+
+    {% if user %}
+    <a href="/add_scene" role="button" class="add-scene pull-left btn btn-success">
+        <span class="glyphicon glyphicon-plus"></span> Add a scene
+    </a>
+    {% endif %}
+
+    <ul class="nav navbar-nav pull-right">
+
+        {% if user %}
+
+        <li class="user">
+            <a href="/profile">
+                <img src="{{user.picture}}?s=20" class="user-picture" />{{user.username}}
+                <span class="coins info-points">{{user.formatted_credits}} <img src="/static/img/coin.png" /></span>
+                <small>/</small>
+                <span class="pixels info-points">{{user.formatted_pixels}} <img src="/static/img/3d.png" /></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="#" class="logout">
+                Logout
+            </a>
+        </li>
+
+        {% else %}
+
+        <li>
+            <a href="/login" class="dropdown-toggle" data-toggle="dropdown">
+                Login <strong class="caret"></strong>
+            </a>
+            <div class="dropdown-menu pull-right dropdown-form">
+                {% include "login.html" %}
+            </div>
+        </li>
+        {% endif %}
+    </ul>
+
+    </nav>
+</header>

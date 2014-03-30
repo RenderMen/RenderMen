@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container row">
+    <div class="col-md-3">
+        <img src="{{user.picture}}?s=250" class="img-thumbnail">
+    </div>
+
+    <div class="col-md-9">
+        <h1 class="big-username big-title">{{user.username}}</h1>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Email :</strong> {{user.email}}
+            </li>
+
+            <li class="list-group-item">
+                <strong>Credits :</strong> <span class="coins">{{user.formatted_credits}} <img src="/static/img/coin.png" /></span>
+            </li>
+
+            <li class="list-group-item">
+                <strong>Pixels rendered :</strong> <span class="pixels">{{user.formatted_pixels}} <img src="/static/img/3d.png" /></span>
+            </li>
+
+        </ul>
+
+        <h3>Renderings</h3>
+        <ul class="list-group">
+            {% for rendering in renderings %}
+            <a href ="/rendering/{{rendering.id}}" class="list-group-item container">
+
+                <h4 class="list-group-item-heading">{{rendering.scene.title}}</h4>
+                <p class="list-group-item-description">{{rendering.scene.description}}</p>
+
+                <div class="progress">
+                  <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{rendering.progress() * 100}}" aria-valuemin="0" aria-valuemax="100" style="width: {{rendering.progress() * 100}}%">
+                    <span class="sr-only">60% Complete</span>
+                  </div>
+                </div>
+
+            </a>
+            {% endfor %}
+        </ul>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}
