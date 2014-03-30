@@ -317,13 +317,13 @@ function main() {
         console.log(data.assignment.assigned_to);
         console.log($("#user-info").attr("data-email"));
 
-        glContext.drawPixels(data.assignment, data.assignment.pixels, 0.5);
+        glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
 
     socket.on('previous assignments', function(data) {
         console.log(data);
         $.each(data.assignments, function(i, assignment) {
-            glContext.drawPixels(assignment, assignment.pixels, 0.5);
+            glContext.drawPixels(assignment, assignment.pixels);
         })
     });
 
