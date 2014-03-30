@@ -173,12 +173,11 @@ def api_rendering(rendering_id):
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
+    print request.json
     username = request.json['username'].lower().strip()
-    user, created = User.objects.get_or_create(username=username)
-    app.logger.info(user)
-    app.logger.info(username)
+    user, created = User.objects.get_or_create(username=username, email='{}@gmail.com'.format(username))
+
     if created:
-        user.email = '{}@fhacktory.com'.format(username)
         user.save()
     connect_user(user)
     return jsonify(ok=True)
