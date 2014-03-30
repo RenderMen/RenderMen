@@ -109,10 +109,6 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
             {
                 attr_normal = vec3(0.0, 0.0, 1.0);
             }
-
-            attr_pos = ray_origin + ray_intersection_dist * ray_dir;
-
-            return 1;
         }
         else
         {
@@ -140,11 +136,11 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
                     attr_normal = vec3(1.0, 0.0, 0.0);
                 }
             }
-
-            attr_pos = ray_origin + ray_intersection_dist * ray_dir;
-
-            return 1;
         }
+
+        attr_pos = ray_origin + ray_intersection_dist * ray_dir;
+
+        return 1;
     }
 
     return 0;
