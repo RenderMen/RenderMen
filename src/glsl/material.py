@@ -137,8 +137,8 @@ material_transparent(vec3 albedo, float refractFactor)
     }
     else // Ray from inside
     {
-        ray_dir = -ray_dir;
-        material_transparent_back(albedo, refractFactor);
+        //ray_dir = -ray_dir;
+        material_transparent_front(albedo, refractFactor);
     }
 }
 
