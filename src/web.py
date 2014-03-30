@@ -54,12 +54,19 @@ def index():
 @app.route("/automatic_rendering")
 @requires_login
 def auto_render():
-    return render_template('index.html')
+    return render_template('auto-dispatch.html')
 
 @app.route("/renderings")
 @requires_login
 def renderings():
-    return render_template('index.html')
+    renderings = Rendering.objects()
+    return render_template('renderings.html', renderings=renderings)
+
+@app.route("/rendering/<rendering_id>")
+@requires_login
+def rendering_page(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    return render_template('rendering_ui.html', rendering=rendering)
 
 @app.route("/profile")
 @requires_login
@@ -73,10 +80,23 @@ def profile():
 def add_scene():
     return render_template('add_scene.html')
 
+
+
 # SocketIO
 @socketio.on('connect', namespace='/rendering')
 def socket_connect():
     pass
+
+@socketio.on('disconnect', namespace='/rendering')
+def on_leave():
+    f = open('loglog', 'a+')
+    f.write('--\nin disconnect')
+    load_request_user()
+    for assignment in Assignment.objects(assigned_to=g.user, status=Assignment.ASSIGNED):
+        assignment.status = Assignment.UNASSIGNED
+        assignment.assigned_to = None
+        f.write('Cancelled one assignment\n')
+
 
 @socketio.on('get rendering', namespace='/rendering')
 def socket_get_rendering(message):
@@ -121,11 +141,13 @@ def socket_assignment_completed(message):
     completed_pixels = int(assignment.width * assignment.height)
 
     g.user.pixels += completed_pixels
-    g.user.credits += math.sqrt(completed_pixels) / 10000000
-    g.user.save()
-
     rendering_author = assignment.rendering_author
-    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
+
+    if g.user != rendering_author:
+        g.user.credits += 1
+        rendering_author.credits = max(0, rendering_author.credits - 1)
+
+    g.user.save()
     rendering_author.save()
 
     emit('incoming assignment', dict(assignment=assignment.to_dict()), room='rendering_{}'.format(assignment.rendering.id))
@@ -155,10 +177,10 @@ def api_rendering(rendering_id):
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
+    print request.json
     username = request.json['username'].lower().strip()
-    user, created = User.objects.get_or_create(username=username, email='{}@fhacktory.com'.format(username))
-    app.logger.info(user)
-    app.logger.info(username)
+    user, created = User.objects.get_or_create(username=username, email='{}@gmail.com'.format(username))
+
     if created:
         user.save()
     connect_user(user)

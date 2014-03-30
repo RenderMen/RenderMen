@@ -267,28 +267,24 @@ function main() {
 
     var socket = io.connect('/rendering');
 
-    socket.emit('get rendering', '/rendering');
 
-    socket.on('new rendering', function(data) {
-        if(!data.ok) {
-            console.log("Couldn't retrieve a rendering (all done ?)");
-            return;
-        }
+    var renderingDOM = $('#rendering');
+    var rendering = {width: renderingDOM.data('width'),
+                     height: renderingDOM.data('height'),
+                     id: renderingDOM.data('id'),
+                     samples: renderingDOM.data('samples') }
+    glContext.current_rendering = rendering;
 
-        var rendering = data.result;
-        glContext.current_rendering = rendering;
+    var $canvas = $('#renderCanvas');
+    $canvas.attr('width', rendering.width);
+    $canvas.attr('height', rendering.height);
 
-        var $canvas = $('#renderCanvas');
-        $canvas.attr('width', rendering.width);
-        $canvas.attr('height', rendering.height);
+    // Fetching previous completed assignments for this rendering
+    socket.emit('get previous assignments', {rendering_id: glContext.current_rendering.id});
 
-        // Fetching previous completed assignments for this rendering
-        socket.emit('get previous assignments', {rendering_id: glContext.current_rendering['_id']['$oid']});
+    // Fetching an assignment for this rendering
+    socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
 
-        // Fetching an assignment for this rendering
-        socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
-
-    });
 
     socket.on('new assignment', function(data) {
         if (!data.ok) {
@@ -307,29 +303,28 @@ function main() {
         var assignment = data.result.assignment;
         var pixels = glContext.processAssignment(assignment, data.result.shader);
 
-        //console.log(pixels);
-        //PIXELS = pixels;
-
-        // And once that's done, we look for another assignment
-        socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
-
         // We send the rendered pixels to the server
         socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
+
+        // And once that's done, we look for another assignment
+        socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
     });
 
     socket.on('incoming assignment', function(data) {
-        if ($("#user-info").attr("data-email") == data.assignment.assigned_to)
-        {
+        var assignment_author_email = data.assignment.assigned_to;
+        var user_email = $("#user-info").attr("data-email");
+
+        if (assignment_author_email == user_email) {
             return;
         }
 
-        glContext.drawPixels(data.assignment, data.assignment.pixels, 0.5);
+        glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
 
     socket.on('previous assignments', function(data) {
         console.log(data);
         $.each(data.assignments, function(i, assignment) {
-            glContext.drawPixels(assignment, assignment.pixels, 0.5);
+            glContext.drawPixels(assignment, assignment.pixels);
         })
     });
 

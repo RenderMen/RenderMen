@@ -13,7 +13,7 @@ def gen_db():
     db.drop_database(config.db_name)
     print '. Dropped database'
 
-    dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
+    dummy = User.new_user('ahmed.kachkach@gmail.com', 'ahmed.kachkach', 'ahmed.kachkach')
     dummy.save()
 
     # GLSL init
@@ -27,8 +27,8 @@ def gen_db():
     pyramideScene.save()
 
     #Rendering.create(width=1000, height=600, samples=16, scene=glsl_scene).save()
-    #Rendering.create(width=600, height=400, samples=64, scene=another_glsl_scene, max_iterations=5).save()
-    Rendering.create(width=600, height=400, samples=4, scene=pyramideScene, max_iterations=5).save()
+    Rendering.create(width=600, height=400, samples=64, scene=another_glsl_scene, max_iterations=5).save()
+    Rendering.create(width=600, height=400, samples=64, scene=pyramideScene, max_iterations=5).save()
 
     print '. Generated dummy data !'
 

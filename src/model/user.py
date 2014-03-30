@@ -45,6 +45,15 @@ class User(mongoengine.Document):
             return str(self.pixels)
 
 
+    @property
+    def formatted_credits(self):
+        if self.credits >= 1000000:
+            return "{}M".format(self.pixels / 1000000.0)
+        elif self.credits >= 1000:
+            return "{}K".format(self.pixels / 1000.0)
+        else:
+            return str(self.credits)
+
 if __name__ == '__main__':
     user = User.new_user('test@test.com', 'mypassword')
     assert user.email == 'test@test.com'

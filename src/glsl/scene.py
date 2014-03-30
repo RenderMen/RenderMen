@@ -3,6 +3,7 @@
 import sys
 sys.path.append('..')
 
+import os
 import math
 import camera
 import primitives
@@ -12,7 +13,7 @@ import utils
 import datetime
 import config
 
-
+import png
 from datetime import datetime
 
 import mongoengine
@@ -60,6 +61,38 @@ class Rendering(mongoengine.Document):
             return assignment
 
         return None
+
+    def png(self):
+        path = config.renders_directory + self.id + ".png"
+
+        if os.path.isfile(path):
+            return path
+
+        os.makedirs(config.renders_directory)
+
+        array = list()
+
+        for i in range(0, self.width):
+            array.append(list())
+
+        for assignment in Assignment.objects(rendering=self):
+            for y in range(assignment.y, assignment.y + assignment.height):
+                for x in range(assignment.x, assignment.x + assignment.width):
+                    for s in range(0, len(assignment.pixels)):
+                        array[x][y] = [
+                            assignment.pixels[4 * s + 0],
+                            assignment.pixels[4 * s + 1],
+                            assignment.pixels[4 * s + 2],
+                            assignment.pixels[4 * s + 3]
+                        ]
+
+        png.from_array(array, 'RGBA').save(path)
+
+        return path
+
+    def progress(self):
+        assignments = Assignment.objects(rendering=self)
+        return len([a for a in assignments if a.status == Assignment.DONE]) / float(len(assignments))
 
     @staticmethod
     def create(scene, width, height, samples, max_iterations):

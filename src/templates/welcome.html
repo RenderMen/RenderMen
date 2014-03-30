@@ -7,16 +7,16 @@
     {% if user %}
 
         <h1 class="big-title">
-            Welcome on RenderMen, {{user.username}}!
+            Welcome on <span class="nice-blue">RenderMen</span>, {{user.username}}!
         </h1>
 
         <ul class="list-group">
             <a href="/automatic_rendering" class="list-group-item">
-                <h3>Automatic dispatching</h3>
+                <h3><span class="glyphicon glyphicon-cog"></span> Automatic <strong>dispatching</strong></h3>
             </a>
 
             <a href="/renderings" class="list-group-item">
-                <h3>Renderings catalog</h3>
+                <h3><span class="glyphicon glyphicon-facetime-video"></span> Renderings <strong>catalog</strong></h3>
             </a>
 
         </ul>

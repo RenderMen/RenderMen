@@ -109,3 +109,14 @@ nav .info-points img {
 .big-username {
     font-size: 54px;
 }
+
+.nice-blue {
+  color: #3498db;
+}
+
+#renderCanvas {
+  background: url('../img/checkerboard.png');
+  border: 1px solid #AAA;
+  margin: 0 auto;
+  display: block;
+}
