@@ -137,10 +137,10 @@ def boiler_scene(user, title, description):
     s.camera.direction = utils.normalize(utils.sub([0.0, 0.0, 0.0], s.camera.position))
 
     #s.add(primitives.Sphere(material=material.Emit(color=[0.5, 0.5, 1.0])))
-    s.add(primitives.Sphere(center=[0.0, 0.0, 1.0], radius=1.0, material=material.Emit(color=[5.0, 5.0, 5.0])))
+    s.add(primitives.Sphere(center=[0.0, -1.0, 1.0], radius=1.0, material=material.Emit(color=[5.0, 5.0, 5.0])))
     s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
     s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0, material=material.Glossy()))
-    s.add(primitives.Cube(material=material.Diffuse()))
+    s.add(primitives.Cube(cubeMin=[1.5, 2.0, 1.0], cubeMax=[3.5, 4.0, 3.0]))#, material=material.Diffuse()))
     #s.add(primitives.Triangle(material=material.Diffuse()));
 
     s.add(primitives.Plan(
