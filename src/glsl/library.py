@@ -175,6 +175,7 @@ main()
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
+    float camera_near_plan = {camera_near_plan};
 
     vec2 screen_coord = position.xy * 0.5 + 0.5;
 
@@ -191,10 +192,8 @@ main()
 
     random_seed = snoise(vec3(screen_coord.x, screen_coord.y, sample_id));
 
-    float far = 1.0;
-
-    float xx = tan(camera_field_of_view / 2.0) * far;
-    float yy = tan(camera_field_of_view / 2.0) * far / image_aspect_ratio;
+    float xx = tan(camera_field_of_view / 2.0) * camera_near_plan;
+    float yy = tan(camera_field_of_view / 2.0) * camera_near_plan / image_aspect_ratio;
 
     vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
     vec3 v = cross(u, camera_dir);
@@ -223,9 +222,10 @@ main()
         render_x=assignment.x,
         render_y=assignment.y,
 
-        camera_origin=utils.code_vec(scene.camera.position),
+        camera_origin=utils.code_vec(scene.camera.look_from),
         camera_dir=utils.code_vec(scene.camera.direction),
-        camera_field_of_view=scene.camera.field_of_view
+        camera_field_of_view=float(scene.camera.field_of_view),
+        camera_near_plan=float(scene.camera.near_plan)
     )
 
 
