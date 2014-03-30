@@ -166,26 +166,26 @@ intersect_triangle(vec3 A, vec3 B, vec3 C)
 
     vec3 intersection = ray_origin + distance * ray_dir - A;
 
-    float basisDot = dot(AB, AC);
-    float invSquaredLengthAB = 1.0 / dot(AB, AB);
-    float invSquaredLengthAC = 1.0 / dot(AC, AC);
+    float basis_dot = dot(AB, AC);
+    float inv_squared_length_AB = 1.0 / dot(AB, AB);
+    float inv_squared_length_AC = 1.0 / dot(AC, AC);
 
-    float uh2 = basisDot * invSquaredLengthAB;
-    float vh1 = basisDot * invSquaredLengthAC;
+    float uh2 = basis_dot * inv_squared_length_AB;
+    float vh1 = basis_dot * inv_squared_length_AC;
 
-    float invDet = 1.0 / (1.0 - uh2 * vh1);
+    float inv_det = 1.0 / (1.0 - uh2 * vh1);
 
-    float h1 = dot(intersection, AB) * invSquaredLengthAB;
-    float h2 = dot(intersection, AC) * invSquaredLengthAC;
+    float h1 = dot(intersection, AB) * inv_squared_length_AB;
+    float h2 = dot(intersection, AC) * inv_squared_length_AC;
 
-    float u = (h1 - h2 * uh2) * invDet;
+    float u = (h1 - h2 * uh2) * inv_det;
 
     if(u < 0.0)
     {
         return 0;
     }
 
-    float v = (h2 - vh1 * h1) * invDet;
+    float v = (h2 - vh1 * h1) * inv_det;
 
     if((v < 0.0) || ((u + v) > 1.0))
     {
@@ -194,65 +194,6 @@ intersect_triangle(vec3 A, vec3 B, vec3 C)
 
     ray_intersection_dist = distance;
     attr_pos = ray_origin + ray_intersection_dist * ray_dir;
-    attr_normal = normalize(normal);
-
-    return 1;
-}
-
-int
-intersect_triangle2(vec3 A, vec3 B, vec3 C)
-{
-    vec3 AB = B - A;
-    vec3 AC = C - A;
-    vec3 normal = cross(AB, AC);
-
-    float normal_dot_ray = dot(normal, ray_dir);
-
-    // The ray is parallel
-    if(abs(normal_dot_ray) < 0.0001) //FIXME
-    {
-        return 0;
-    }
-
-    float d = dot(normal, A);
-    float t = -(dot(normal, ray_origin) + d) / normal_dot_ray;
-
-    //if(t < 0.0)
-    //{
-    //    return 0;
-    //}
-
-    // Inside-out test
-    vec3 phit = ray_origin + t * ray_dir;
-
-    // Inside-out test edge0
-    vec3 edge0 = phit - A;
-    float v = dot(normal, cross(AB, edge0));
-    if(v < 0.0) // Outside triangle
-    {
-        return 0;
-    }
-
-    // Inside-out test edge1
-    vec3 edge1 = phit - B;
-    vec3 p1p2 = C - B;
-    float w = dot(normal, cross(p1p2, edge1));
-    if(w < 0.0) // Outside triangle
-    {
-        return 0;
-    }
-
-    // Inside-out test edge2
-    vec3 edge2 = phit - C;
-    vec3 p2p0 = A - C;
-    float u = dot(normal, cross(p2p0, edge2));
-    if(u < 0.0) // Outside triangle
-    {
-        return 0;
-    }
-
-    ray_intersection_dist = t;
-    attr_pos = phit;
     attr_normal = normalize(normal);
 
     return 1;
