@@ -96,7 +96,7 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     }
     // Use the pathtracing program
     gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, glContext.fullscreenBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -206,9 +206,6 @@ GLContext.prototype.getPixels = function(assignment, texture) {
 
     this.drawFullscreenQuad(texture);
 
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
     var pixel_count = 4 * render_width * render_height;
     var pixels = new Uint8Array(pixel_count);
 
@@ -217,18 +214,76 @@ GLContext.prototype.getPixels = function(assignment, texture) {
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.deleteTexture(integerTexture);
 
-    var pixel_array = new Array();
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    var pixel_array = new Array(pixel_count);
 
     for (var i = 0; i < pixel_count; i++)
     {
-        pixel_array.push(pixels[i]);
+        pixel_array[i] = pixels[i];
     }
 
     return pixel_array;
 }
 
-function fetchAssignment() {
-    apiCall('/api/rendering/' + glContext.current_rendering['_id']['$oid'] + '/assignment', 'GET', {}, function(data) {
+GLContext.prototype.drawPixels = function(assignment, pixel_array) {
+    var pixels = new Uint8Array(pixel_array);
+    var gl = this.context;
+
+    var render_x = parseInt(assignment["x"]);
+    var render_y = parseInt(assignment["y"]);
+    var render_width = parseInt(assignment["width"]);
+    var render_height = parseInt(assignment["height"]);
+
+    gl.viewport(render_x, render_y, render_width, render_height);
+
+    var integerTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, integerTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, render_width, render_height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    this.drawFullscreenQuad(integerTexture);
+
+    gl.deleteTexture(integerTexture);
+}
+
+// Main
+function main() {
+    var glContext = new GLContext();
+    assert(glContext, "Failed to get WebGL context");
+
+    var socket = io.connect('/rendering');
+
+    socket.emit('get rendering', '/rendering');
+
+    socket.on('new rendering', function(data) {
+        if(!data.ok) {
+            console.log("Couldn't retrieve a rendering (all done ?)");
+            return;
+        }
+
+        var rendering = data.result;
+        glContext.current_rendering = rendering;
+
+        var $canvas = $('#renderCanvas');
+        $canvas.attr('width', rendering.width);
+        $canvas.attr('height', rendering.height);
+
+        // Fetching previous completed assignments for this rendering
+        socket.emit('get previous assignments', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
+        // Fetching an assignment for this rendering
+        socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
+    });
+
+    socket.on('new assignment', function(data) {
         if (!data.ok) {
             console.log("Couldn't fetch a rendering !");
             return;
@@ -242,39 +297,33 @@ function fetchAssignment() {
         }
 
         // Otherwise we process the given assignment
-        var pixels = glContext.processAssignment(data.result.assignment, data.result.shader);
+        var assignment = data.result.assignment;
+        var pixels = glContext.processAssignment(assignment, data.result.shader);
+
+        //console.log(pixels);
+        //PIXELS = pixels;
 
         // And once that's done, we look for another assignment
-        fetchAssignment();
+        socket.emit('get assignment', {rendering_id: glContext.current_rendering['_id']['$oid']});
+
+        // We send the rendered pixels to the server
+        socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
     });
-};
 
-function fetchRendering() {
-    apiCall('/api/rendering/first', 'GET', {}, function(data) {
-        if(!data.ok) {
-            console.log("Couldn't retrieve a rendering (all done ?)");
-            return;
-        }
-
-        var rendering = data.result;
-        glContext.current_rendering = rendering;
-
-        var $canvas = $('#renderCanvas');
-        $canvas.attr('width', rendering.width);
-        $canvas.attr('height', rendering.height);
-
-        // Fetching an assignment for that rendering
-        fetchAssignment();
+    socket.on('incoming assignment', function(data) {
+        console.log('incoming !');
+        console.log(data);
+        glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
-};
 
-// Main
-function main() {
-    glContext = new GLContext();
-    assert(glContext, "Failed to get WebGL context");
+    socket.on('previous assignments', function(data) {
+        console.log(data);
+        $.each(data.assignments, function(i, assignment) {
+            console.log(assignment);
+            glContext.drawPixels(assignment, assignment.pixels);
+        })
+    });
 
-    // Retrieve a rendering to complete
-    fetchRendering();
 }
 
 

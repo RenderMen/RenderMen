@@ -29,14 +29,21 @@ material_mirror(vec3 albedo)
 }
 
 void
-material_glossy(vec3 albedo)
+material_glossy(vec4 albedo)
 {
-    vec3 light_ray = reflect(ray_dir, attr_normal);
-    vec3 reflected_light = normalize(reflect(light_ray, attr_normal));
-    float specularHighlight = max(0.0, dot(reflected_light, ray_dir));
-    vec3 half_sphere = random_half_sphere() * 0.1;
-    vec3 new_ray_dir = reflect(ray_dir, attr_normal) + half_sphere;
-    ray_color = albedo * specularHighlight;
+    float cos_alpha = - dot(attr_normal, ray_dir);
+
+    vec3 z = ray_dir + attr_normal * (2.0 * cos_alpha);
+
+    mat3 tbn = generate_basis(z);
+
+    float r1 = 2.0 * MATH_PI * random();
+    float r2 = pow(random(), albedo.w) * cos_alpha * cos_alpha;
+    float r2s = sqrt(r2);
+
+    vec3 new_ray_dir = tbn * vec3(cos(r1) * r2s, sin(r1) * r2s, sqrt(1.0 - r2));
+
+    ray_color = albedo.xyz;
     ray_continue(new_ray_dir);
 }
 
@@ -193,12 +200,17 @@ class Mirror(Abstract):
 class Glossy(Abstract):
 
     albedo = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.8, 0.8, 0.8])
+    hardness = mongoengine.FloatField(default=2.0)
+
+    @property
+    def vec4(self):
+        return [self.albedo[0], self.albedo[1], self.albedo[2], self.hardness]
 
     def code(self):
         code_tmplt = "material_glossy({albedo});"
 
         return code_tmplt.format(
-            albedo=utils.code_vec(self.albedo)
+            albedo=utils.code_vec(self.vec4)
         )
 
 
@@ -211,8 +223,6 @@ class Transparent(Abstract):
 
     def code(self):
         code_tmplt = "material_transparent({albedo}, {refract_factor});"
-
-        print self.refract_factor
 
         return code_tmplt.format(
             albedo=utils.code_vec(self.albedo),

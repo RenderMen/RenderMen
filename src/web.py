@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import math
 from functools import wraps
 import json
 from datetime import datetime
 
 import mongoengine
 from flask import Flask, render_template, session, request, jsonify, g, redirect
+from flask.ext.socketio import SocketIO, emit, join_room
+
 
 import config
 from model.user import User, hash_password
@@ -21,6 +24,7 @@ mongoengine.connect(config.db_name)
 # Flask app
 app = Flask(__name__)
 app.secret_key = config.session_secret_key
+socketio = SocketIO(app)
 
 def requires_login(f):
     @wraps(f)
@@ -61,24 +65,73 @@ def profile():
 def add_scene():
     return render_template('add_scene.html')
 
-# API
-@app.route("/api/shader")
-def api_shader():
-    rendering = Rendering.objects().order_by('-date_created').first()
-    return jsonify(ok=True, result=rendering.scene.composeGLSL())
+# SocketIO
+@socketio.on('connect', namespace='/rendering')
+def socket_connect():
+    pass
 
-@app.route("/api/rendering/first")
-@requires_login
-def api_first_rendering():
+@socketio.on('get rendering', namespace='/rendering')
+def socket_get_rendering(message):
     available_renderings = [r for r in Rendering.objects().order_by('-date_created')
                             if any(a.status == Assignment.UNASSIGNED for a in Assignment.objects(rendering=r))]
     if available_renderings:
         rendering_dict = available_renderings[0].to_dict()
         # rendering_dict['completion'] = rendering.completion
-        return jsonify(ok=True, result=rendering_dict)
+        emit('new rendering', dict(ok=True, result=rendering_dict))
     else:
-        return jsonify(ok=False)
+        return emit('new rendering', dict(ok=False))
 
+@socketio.on('get assignment', namespace='/rendering')
+def socket_get_assignment(message):
+    rendering = Rendering.objects.get(id=message['rendering_id'])
+    assignment = rendering.get_assignment()
+
+    if assignment:
+        # Assigning to user
+        assignment.status = Assignment.ASSIGNED
+        assignment.date = datetime.now()
+        assignment.save()
+        # Join a room
+        join_room('rendering_{}'.format(message['rendering_id']))
+        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
+        emit('new assignment', dict(ok=True, result=result))
+    else:
+        emit('new assignment', dict(ok=False, result=dict(completed=True)))
+
+@socketio.on('assignment completed', namespace='/rendering')
+def socket_assignment_completed(message):
+    load_request_user()
+
+    assignment = Assignment.objects.get(id=message['assignment_id'])
+    assignment.status = Assignment.DONE
+    assignment.pixels = [ord(c) for c in message['pixels']]
+    assignment.save()
+
+    completed_pixels = int(assignment.width * assignment.height)
+
+    g.user.pixels += completed_pixels
+    g.user.credits += math.sqrt(completed_pixels) / 10000000
+    g.user.save()
+
+    rendering_author = assignment.rendering_author
+    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
+    rendering_author.save()
+
+    emit('incoming assignment', dict(assignment=assignment.to_dict()), room='rendering_{}'.format(assignment.rendering.id))
+
+    return jsonify(ok=True)
+
+
+@socketio.on('get previous assignments', namespace='/rendering')
+def socket_previous_assignments(message):
+    rendering = Rendering.objects.get(id=message['rendering_id'])
+    assignments = [a.to_dict() for a in Assignment.objects(rendering=rendering, status=Assignment.DONE)]
+
+    emit('previous assignments', dict(assignments=assignments))
+
+    return jsonify(ok=True)
+
+# API
 @app.route("/api/rendering/<rendering_id>")
 @requires_login
 def api_rendering(rendering_id):
@@ -88,42 +141,6 @@ def api_rendering(rendering_id):
 
     return jsonify(ok=True, result=rendering_dict)
 
-@app.route("/api/rendering/<rendering_id>/assignment")
-@requires_login
-def api_get_assignment(rendering_id):
-    rendering = Rendering.objects.get(id=rendering_id)
-    assignment = rendering.get_assignment()
-
-    if assignment:
-        # Assigning to user
-        assignment.status = Assignment.ASSIGNED
-        assignment.date = datetime.now()
-        assignment.save()
-        result = dict(completed=False, rendering=rendering.to_dict(), assignment=assignment.to_dict(), shader=assignment.composeGLSL())
-        return jsonify(ok=True, result=result)
-    else:
-        return jsonify(ok=True, result=dict(completed=True))
-
-
-@app.route("/api/assignment/<assignment_id>/complete", methods=['POST'])
-@requires_login
-def complete_assignment(assignment_id):
-    assignment = Assignment.objects.get(id=assignment_id)
-    assignment.status = Assignment.DONE
-    # assignment.pixels = request.json['pixels']
-    assignment.save()
-
-    completed_pixels = int(assignment.width * assignment.height)
-
-    g.user.pixels += completed_pixels
-    g.user.credits += completed_pixels / 2
-    g.user.save()
-
-    rendering_author = assignment.rendering_author
-    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
-    rendering_author.save()
-
-    return jsonify(ok=True)
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
@@ -163,4 +180,5 @@ def connect_user(user):
     load_template_user()
 
 if __name__ == "__main__":
-    app.run('0.0.0.0', 5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000)
+    # app.run('0.0.0.0', 5000, debug=True)

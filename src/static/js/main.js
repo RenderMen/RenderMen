@@ -14,54 +14,64 @@ function apiCall(path, method, params, callback) {
     request.success(callback);
 }
 
+function byteToString(bytearray) {
+  var result = new Array(bytearray.length);
+  for (var i = 0; i < bytearray.length; i++) {
+    result[i] = String.fromCharCode(bytearray[i]);
+  }
+  return result.join('');
+}
+
 // Main
 $(document).ready(function() {
-    // Configures login dropdown menu
-    $('.dropdown-menu').click(function(event) {
-      event.stopPropagation();
+  // Configures login dropdown menu
+  $('.dropdown-menu').click(function(event) {
+    event.stopPropagation();
+  });
+
+  // Login btn
+  $('#login-btn').click(function(e) {
+    var email = $('#login-email').val();
+    var password = $('#login-password').val();
+
+    apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
+      if (!data.ok) {
+          $.notify(data.error, 'error');
+          return;
+      }
+
+      // Redirecting the user to the frontpage
+      window.location.replace('/');
     });
 
-    // Login btn
-    $('#login-btn').click(function(e) {
-      var email = $('#login-email').val();
-      var password = $('#login-password').val();
+  });
 
-      apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
-        if (!data.ok) {
-            $.notify(data.error, 'error');
-            return;
-        }
+  // Signup btn
+  $('#signup-btn').click(function(e) {
+    var email = $('#signup-email').val();
+    var username = $('#signup-username').val();
+    var password = $('#signup-password').val();
 
-        // Redirecting the user to the frontpage
-        window.location.replace('/');
-      });
+    apiCall('/api/signup', 'POST', {email: email, username:username, password: password}, function(data) {
+      if (!data.ok) {
+          $.notify("Invalid sign-up information. Please try again !", 'error');
+          return;
+      }
 
+      // Redirecting the user to the frontpage
+      window.location.replace('/');
     });
 
-    // Signup btn
-    $('#signup-btn').click(function(e) {
-      var email = $('#signup-email').val();
-      var username = $('#signup-username').val();
-      var password = $('#signup-password').val();
+  });
 
-      apiCall('/api/signup', 'POST', {email: email, username:username, password: password}, function(data) {
-        if (!data.ok) {
-            $.notify("Invalid sign-up information. Please try again !", 'error');
-            return;
-        }
-
-        // Redirecting the user to the frontpage
-        window.location.replace('/');
-      });
-
+  // Logout link
+  $('a.logout').click(function() {
+    apiCall('/api/logout', 'POST', {}, function(data) {
+      console.log('okdsokfs');
+      // Redirecting the user to the frontpage
+      window.location.replace('/');
     });
-    // Logout link
-    $('a.logout').click(function() {
-      apiCall('/api/logout', 'POST', {}, function(data) {
-        // Redirecting the user to the frontpage
-        window.location.replace('/');
-      });
-    })
+  })
 
     //testGetShader();
 });
