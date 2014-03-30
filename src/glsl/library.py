@@ -175,8 +175,11 @@ main()
     vec3 camera_origin = {camera_origin};
     vec3 camera_dir = {camera_dir};
     float camera_field_of_view = {camera_field_of_view};
+    float camera_near_plan = {camera_near_plan};
+    float camera_focal_distance = {camera_focal_distance};
+    float camera_blur_factor = {camera_blur_factor};
 
-    vec2 screen_coord = position.xy * 0.5 + 0.5;
+    vec2 screen_coord = (position.xy + offset) * 0.5 + 0.5;
 
     screen_coord.x *= float(render_width);
     screen_coord.y *= float(render_height);
@@ -191,20 +194,30 @@ main()
 
     random_seed = snoise(vec3(screen_coord.x, screen_coord.y, sample_id));
 
-    float far = 1.0;
+    float camera_tan = tan(camera_field_of_view * 0.5);
+    float camera_cos = cos(camera_field_of_view * 0.5);
 
-    float xx = tan(camera_field_of_view / 2.0) * far;
-    float yy = tan(camera_field_of_view / 2.0) * far / image_aspect_ratio;
+    float focal_plan_u = camera_tan * camera_focal_distance;
+    float focal_plan_v = focal_plan_u / image_aspect_ratio;
+    vec3 focal_plan_pos = camera_origin + camera_dir * (camera_focal_distance  * camera_cos);
+
+    float camera_plan_u = camera_tan * camera_near_plan;
+    float camera_plan_v = camera_plan_u / image_aspect_ratio;
+    vec3 camera_plan_pos = camera_origin + camera_dir * (camera_near_plan  * camera_cos);
 
     vec3 u = normalize(cross(camera_dir, vec3(0.0, 0.0, 1.0)));
     vec3 v = cross(u, camera_dir);
 
-    vec3 c = camera_origin + camera_dir * cos(camera_field_of_view / 2.0);
+    float rbt = random() * 2.0 * MATH_PI;
+    float rbr = sqrt(random());
 
-    vec3 pos = c + (xx * (screen_coord.x + offset.x)) * u + (yy * (screen_coord.y + offset.y)) * v;
-    vec3 dir = normalize(pos - camera_origin);
+    vec2 blur_offset = rbr * vec2(cos(rbt), sin(rbt));
 
-    vec3 ray_color = ray_launch(pos, dir);
+    vec3 ray_focal_passby = focal_plan_pos + (focal_plan_u * screen_coord.x) * u + (focal_plan_v * screen_coord.y) * v;
+    vec3 ray_pos = camera_plan_pos + (camera_plan_u * (screen_coord.x + blur_offset.x)) * u + (camera_plan_v * (screen_coord.y + blur_offset.y * image_aspect_ratio)) * v;
+
+    vec3 ray_dir = normalize(ray_focal_passby - ray_pos);
+    vec3 ray_color = ray_launch(ray_pos, ray_dir);
 
     gl_FragColor = vec4(ray_color / nb_samples, 1.0);
 }}
@@ -223,9 +236,12 @@ main()
         render_x=assignment.x,
         render_y=assignment.y,
 
-        camera_origin=utils.code_vec(scene.camera.position),
+        camera_origin=utils.code_vec(scene.camera.look_from),
         camera_dir=utils.code_vec(scene.camera.direction),
-        camera_field_of_view=scene.camera.field_of_view
+        camera_field_of_view=float(scene.camera.field_of_view),
+        camera_near_plan=float(scene.camera.near_plan),
+        camera_focal_distance=float(scene.camera.focal_distance),
+        camera_blur_factor=float(scene.camera.blur_factor)
     )
 
 

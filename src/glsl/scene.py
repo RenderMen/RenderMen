@@ -130,16 +130,16 @@ class Assignment(mongoengine.Document):
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)
-    s.camera.position[0] = -5
-    s.camera.position[1] = -5
-    s.camera.position[2] = 5
-
-    s.camera.direction = utils.normalize(utils.sub([0.0, 0.0, 2.0], s.camera.position))
+    s.camera.look_from = [-7, -7, 7]
+    s.camera.look_at = [0.0, 3.0, 2.0]
+    #s.camera.field_of_view = math.pi * 0.1
+    s.camera.blur_factor = 0.025
 
     s.add(primitives.Sphere(center=[0.0, 0.0, 10.0], radius=3.0, material=material.Emit(color=[12.0, 12.0, 12.0])))
     s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
-    s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0, material=material.Glossy()))
-    s.add(primitives.Cube(cubeMin=[-1.0, -1.0, 1.0], cubeMax=[3.5, 4.0, 3.0]))#, material=material.Diffuse()))
+    s.add(primitives.Sphere(center=[-4.0, 3.0, 1.0], radius=1.0))#, material=material.Glossy()))
+    s.add(primitives.Cube(cubeMin=[2.0, -2.0, 1.0], cubeMax=[5.5, 2.0, 3.0], material=material.Mirror()))
+    s.add(primitives.Triangle(p1=[-1.0, 1.0, -1.0], p2=[1.0, 0.0, 0.0], p3=[0.0, 0.0, -1.0]))
 
     s.add(primitives.Plan(
         normal=[-1.0, 0.0, 0.0],
