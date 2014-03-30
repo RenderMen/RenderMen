@@ -119,6 +119,7 @@ class Assignment(mongoengine.Document):
 
     date = mongoengine.DateTimeField(default=datetime.now)
     status = mongoengine.IntField(default=UNASSIGNED)
+    assigned_to = mongoengine.ReferenceField(User, default=None)
 
     pixels = mongoengine.ListField(mongoengine.IntField())
 
