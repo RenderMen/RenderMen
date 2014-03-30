@@ -26,7 +26,7 @@ def requires_login(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in', None):
-            return redirect('/login')
+            return redirect('/')
         else:
             return f(*args, **kwargs)
     return decorated_function
@@ -44,7 +44,10 @@ def load_request_user():
 # Pages
 @app.route("/")
 def index():
-    return render_template('index.html')
+    if g.user:
+        return render_template('index.html')
+    else:
+        return render_template('welcome.html')
 
 @app.route("/profile")
 @requires_login
