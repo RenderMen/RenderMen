@@ -146,8 +146,6 @@ def boiler_scene(user, title, description):
 
     s.add(primitives.Triangle(A=[-6.0, 5.0, 0.0], B=[-2.0, 5.0, 0.0], C=[-6.0, 6.0, 5.0]
         , material = material.Mirror()))
-    #s.add(primitives.Triangle(A=[2.0, 0.0, 0.0], B=[2.0, 3.0, 0.0], C=[2.0, 0.0, 3.0],
-        #material = material.Mirror()))
 
     s.add(primitives.Plan(
         normal=[-1.0, 0.0, 0.0],
