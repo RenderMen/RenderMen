@@ -5,7 +5,7 @@ function GLContext()
     this.canvas = document.getElementById("renderCanvas");
 
     // Real gl context
-    this.context = this.canvas.getContext("experimental-webgl");
+    this.context = this.canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
     assert(this.context, "WebGL not supported");
 
     var gl = this.context;
@@ -27,27 +27,19 @@ function GLContext()
 
 }
 
-GLContext.prototype.width = function() {
-    return this.context.drawingBufferWidth;
-}
-
-GLContext.prototype.height = function() {
-    return this.context.drawingBufferHeight;
-}
-
 GLContext.prototype.processAssignment = function(assignment, shaderCode) {
-    this.canvas.width = parseInt(assignment["width"]);
-    this.canvas.height = parseInt(assignment["height"]);
-    this.canvas.style =  'margin-left: ' + assignment.x + 'px;' + ' margin-top: ' + assignment.y + 'px;';
-
     var gl = this.context;
 
     // Set viewport
-    gl.viewport(0, 0, this.width(), this.height());
-
     var program = createProgram(this.context, fullscreenVertexShader, shaderCode);
     var texture = this.rayTrace(assignment, program);
 
+    var render_x = parseInt(assignment["x"]);
+    var render_y = parseInt(assignment["y"]);
+    var render_width = parseInt(assignment["width"]);
+    var render_height = parseInt(assignment["height"]);
+
+    gl.viewport(render_x, render_y, render_width, render_height);
     this.drawFullscreenQuad(texture);
 }
 
@@ -75,18 +67,23 @@ GLContext.prototype.drawFullscreenQuad = function(texture) {
 GLContext.prototype.rayTrace = function(assignment, program) {
     var gl = glContext.context;
 
-    texture = gl.createTexture();
+    var render_width = parseInt(assignment["width"]);
+    var render_height = parseInt(assignment["height"]);
+
+    var texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width(), this.height(), 0, gl.RGBA, gl.FLOAT, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, render_width, render_height, 0, gl.RGBA, gl.FLOAT, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     this.fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    gl.viewport(0, 0, render_width, render_height);
 
     if (!gl.isFramebuffer(this.fbo)) {
         throw "Invalid framebuffer";
@@ -141,8 +138,8 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     //>>> Send uniforms
     gl.uniform1f(nbSamplesLoc, samples * samples); // Number of samples
 
-    var pixelWidth = 2 / this.width();
-    var pixelHeight = 2 / this.height();
+    var pixelWidth = 2 / render_width;
+    var pixelHeight = 2 / render_height;
 
     var xStep = pixelWidth / samples;
     var yStep = pixelHeight / samples;
