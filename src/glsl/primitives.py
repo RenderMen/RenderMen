@@ -95,7 +95,7 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
         return 0;
     }
 
-    if(max(tMin, tzMax) > 0.0)
+    if(max(tMin, tzMin) > 0.0)
     {
         if(tzMin > tMin)
         {
@@ -107,7 +107,7 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
             }
             else
             {
-                attr_normal = vec3(0.0, 0.0, -1.0);
+                attr_normal = vec3(0.0, 0.0, 1.0);
             }
 
             attr_pos = ray_origin + ray_intersection_dist * ray_dir;
@@ -122,22 +122,22 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
             {
                 if(ray_dir.y > 0.0)
                 {
-                    attr_normal = vec3(-1.0, 0.0, 0.0);
+                    attr_normal = vec3(0.0, -1.0, 0.0);
                 }
                 else
                 {
-                    attr_normal = vec3(-1.0, 0.0, 0.0);
+                    attr_normal = vec3(0.0, 1.0, 0.0);
                 }
             }
             else
             {
                 if(ray_dir.x > 0.0)
                 {
-                    attr_normal = vec3(0.0, -1.0, 0.0);
+                    attr_normal = vec3(-1.0, 0.0, 0.0);
                 }
                 else
                 {
-                    attr_normal = vec3(0.0, -1.0, 0.0);
+                    attr_normal = vec3(1.0, 0.0, 0.0);
                 }
             }
 
