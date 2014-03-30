@@ -18,7 +18,7 @@ class User(mongoengine.Document):
     salt = mongoengine.StringField(required=True)
     secret_hash = mongoengine.StringField(required=True)
     credits = mongoengine.IntField(default=50)
-    pixels = mongoengine.IntField(default=1307)
+    pixels = mongoengine.IntField(default=0)
     picture = mongoengine.StringField()
 
     @staticmethod

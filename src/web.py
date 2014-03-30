@@ -105,7 +105,7 @@ def api_get_assignment(rendering_id):
         return jsonify(ok=True, result=dict(completed=True))
 
 
-@app.route("/api/assignment/<assignment_id>/complete", methods=['POST'])
+@app.route("/api/assignment/<assignment_id>/completed", methods=['POST'])
 @requires_login
 def complete_assignment(assignment_id):
     assignment = Assignment.objects.get(id=assignment_id)
