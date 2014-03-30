@@ -28,7 +28,8 @@
         <h3>Renderings</h3>
         <ul class="list-group">
             {% for rendering in renderings %}
-            <li class="list-group-item">
+            <a href ="/rendering/{{rendering.id}}" class="list-group-item container">
+
                 <h4 class="list-group-item-heading">{{rendering.scene.title}}</h4>
                 <p class="list-group-item-description">{{rendering.scene.description}}</p>
 
@@ -37,7 +38,8 @@
                     <span class="sr-only">60% Complete</span>
                   </div>
                 </div>
-            </li>
+
+            </a>
             {% endfor %}
         </ul>
 
