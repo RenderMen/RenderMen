@@ -24,7 +24,7 @@ def gen_db():
     another_glsl_scene.save()
 
     #Rendering.create(width=1000, height=600, samples=16, scene=glsl_scene).save()
-    Rendering.create(width=600, height=400, samples=64, scene=another_glsl_scene, max_iterations=5).save()
+    Rendering.create(width=600, height=400, samples=8, scene=another_glsl_scene, max_iterations=5).save()
 
     print '. Generated dummy data !'
 
