@@ -16,11 +16,11 @@
             </li>
 
             <li class="list-group-item">
-                <strong>Credits :</strong> <span class="coins">{{user.credits}} <img src="/static/img/coin.png" /></span>
+                <strong>Credits :</strong> <span class="coins">{{user.formatted_credits}} <img src="/static/img/coin.png" /></span>
             </li>
 
             <li class="list-group-item">
-                <strong>Pixels rendered :</strong> <span class="pixels">{{user.pixels}} <img src="/static/img/3d.png" /></span>
+                <strong>Pixels rendered :</strong> <span class="pixels">{{user.formatted_pixels}} <img src="/static/img/3d.png" /></span>
             </li>
 
         </ul>
@@ -33,7 +33,7 @@
                 <p class="list-group-item-description">{{rendering.scene.description}}</p>
 
                 <div class="progress">
-                  <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
+                  <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{rendering.progress() * 100}}" aria-valuemin="0" aria-valuemax="100" style="width: {{rendering.progress() * 100}}%">
                     <span class="sr-only">60% Complete</span>
                   </div>
                 </div>

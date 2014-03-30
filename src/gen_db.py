@@ -13,7 +13,7 @@ def gen_db():
     db.drop_database(config.db_name)
     print '. Dropped database'
 
-    dummy = User.new_user('ahmed.kachkach@gmail.com', 'halflings', 'password')
+    dummy = User.new_user('ahmed.kachkach@gmail.com', 'test', 'test')
     dummy.save()
 
     # GLSL init

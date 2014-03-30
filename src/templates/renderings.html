@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="container">
+
+        <h3>Renderings</h3>
+        <div class="list-group">
+            {% for rendering in renderings %}
+            <a href ="/rendering/{{rendering.id}}" class="list-group-item">
+                <h4 class="list-group-item-heading">{{rendering.scene.title}} <small>({{rendering.width}} x {{rendering.height}} -
+                {{rendering.scene.primitives|length}} shapes - {{rendering.samples}}x{{rendering.samples}} sampling)</small></h4>
+                <p class="list-group-item-description">{{rendering.scene.description}}</p>
+
+                <div class="progress">
+                  {% set perc = rendering.progress()*100 %}
+                  {% if perc > 45 %}
+                    {% set progress_cls = "success" %}
+                  {% else %}
+                    {% set progress_cls = "warning" %}
+                  {% endif %}
+                  <div class="progress-bar progress-bar-{{progress_cls}}" role="progressbar" aria-valuenow="{{perc}}" aria-valuemin="0" aria-valuemax="100" style="width: {{perc}}%">
+                    <span class="sr-only">60% Complete</span>
+                  </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

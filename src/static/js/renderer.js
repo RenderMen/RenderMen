@@ -318,6 +318,8 @@ function main() {
     });
 
     socket.on('incoming assignment', function(data) {
+        console.log(data.assignment.assigned_to);
+        console.log($("#user-info").attr("data-email"));
         if ($("#user-info").attr("data-email") == data.assignment.assigned_to)
         {
             return;
