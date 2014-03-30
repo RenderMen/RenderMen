@@ -11,7 +11,7 @@ from flask.ext.socketio import SocketIO, emit, join_room
 
 
 import config
-from model.user import User, hash_password
+from model.user import User
 
 from glsl.scene import Rendering, Scene, Assignment
 
@@ -48,10 +48,17 @@ def load_request_user():
 # Pages
 @app.route("/")
 def index():
-    if g.user:
-        return render_template('index.html')
-    else:
-        return render_template('welcome.html')
+    return render_template('welcome.html')
+
+@app.route("/automatic_rendering")
+@requires_login
+def auto_render():
+    return render_template('index.html')
+
+@app.route("/renderings")
+@requires_login
+def renderings():
+    return render_template('index.html')
 
 @app.route("/profile")
 @requires_login
@@ -147,16 +154,14 @@ def api_rendering(rendering_id):
 
 @app.route("/api/login", methods=['POST'])
 def api_connect():
-    email, password = request.json['email'].lower().strip(), request.json['password']
-    try:
-        user = User.objects.get(email=email)
-        if user.secret_hash == hash_password(password, user.salt):
-            connect_user(user)
-            return jsonify(ok=True)
-        else:
-            return jsonify(ok=False)
-    except mongoengine.DoesNotExist:
-        return jsonify(ok=False)
+    username = request.json['username'].lower().strip()
+    user, created = User.objects.get_or_create(username=username, email='{}@fhacktory.com'.format(username))
+    app.logger.info(user)
+    app.logger.info(username)
+    if created:
+        user.save()
+    connect_user(user)
+    return jsonify(ok=True)
 
 @app.route("/api/signup", methods=['POST'])
 def api_signup():

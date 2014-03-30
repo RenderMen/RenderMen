@@ -30,11 +30,11 @@ $(document).ready(function() {
   });
 
   // Login btn
-  $('#login-btn').click(function(e) {
-    var email = $('#login-email').val();
-    var password = $('#login-password').val();
+  $('.login-btn').click(function(e) {
+    var username = $(this).parent().find('.login-username').val();
+    //var password = $(this).parent().find('.login-password').val();
 
-    apiCall('/api/login', 'POST', {email: email, password: password}, function(data) {
+    apiCall('/api/login', 'POST', {username: username}, function(data) {
       if (!data.ok) {
           $.notify(data.error, 'error');
           return;

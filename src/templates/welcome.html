@@ -4,6 +4,24 @@
 
 <div class="container">
 
+    {% if user %}
+
+        <h1 class="big-title">
+            Welcome on RenderMen, {{user.username}}!
+        </h1>
+
+        <ul class="list-group">
+            <a href="/automatic_rendering" class="list-group-item">
+                <h3>Automatic dispatching</h3>
+            </a>
+
+            <a href="/renderings" class="list-group-item">
+                <h3>Renderings catalog</h3>
+            </a>
+
+        </ul>
+    {% else %}
+
     <h1 class="big-title">
         Welcome on RenderMen!
     </h1>
@@ -11,6 +29,8 @@
     <p class="alert alert-info">
         Please login to access the renderer.
     </p>
+    {% endif %}
+
 
 
 </div>

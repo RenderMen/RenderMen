@@ -15,8 +15,8 @@ class User(mongoengine.Document):
     email = mongoengine.StringField(primary_key=True, unique=True)
     username = mongoengine.StringField(required=True, unique=True)
 
-    salt = mongoengine.StringField(required=True)
-    secret_hash = mongoengine.StringField(required=True)
+    salt = mongoengine.StringField(default=None)
+    secret_hash = mongoengine.StringField(default=None)
     credits = mongoengine.LongField(default=50)
     pixels = mongoengine.LongField(default=0)
     picture = mongoengine.StringField()
