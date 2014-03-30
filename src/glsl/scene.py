@@ -130,29 +130,30 @@ class Assignment(mongoengine.Document):
 
 def boiler_scene(user, title, description):
     s = Scene(created_by=user, title=title, description=description)
-    s.camera.position[0] = -3
-    s.camera.position[1] = -3
-    s.camera.position[2] = 3
+    s.camera.position[0] = -5
+    s.camera.position[1] = -5
+    s.camera.position[2] = 5
 
-    s.camera.direction = utils.normalize(utils.sub([0.0, 0.0, 0.0], s.camera.position))
+    s.camera.direction = utils.normalize(utils.sub([0.0, 0.0, 2.0], s.camera.position))
 
-    #s.add(primitives.Sphere(material=material.Emit(color=[0.5, 0.5, 1.0])))
-    s.add(primitives.Sphere(center=[0.0, 0.0, 1.0], radius=1.0, material=material.Emit(color=[5.0, 5.0, 5.0])))
-    s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror(color=[5.0, 5.0, 5.0])))
+    s.add(primitives.Sphere(center=[0.0, 0.0, 10.0], radius=3.0, material=material.Emit(color=[12.0, 12.0, 12.0])))
+    s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
+    s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0, material=material.Glossy()))
+    s.add(primitives.Cube(cubeMin=[-1.0, -1.0, 1.0], cubeMax=[3.5, 4.0, 3.0]))#, material=material.Diffuse()))
 
     s.add(primitives.Plan(
         normal=[-1.0, 0.0, 0.0],
-        distance=5.0,
+        distance=10.0,
         material=material.Diffuse(albedo=[0.75, 0.25, 0.25]))
     )  # X+
     s.add(primitives.Plan(
         normal=[1.0, 0.0, 0.0],
-        distance=-5.0,
+        distance=-10.0,
         material=material.Diffuse(albedo=[0.25, 0.25, 0.75]))
     )  # X-
 
-    s.add(primitives.Plan(normal=[0.0, -1.0, 0.0], distance=5.0, material=material.Diffuse()))  # Y+
-    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=-5.0, material=material.Diffuse()))  # Y-
+    s.add(primitives.Plan(normal=[0.0, -1.0, 0.0], distance=10.0, material=material.Diffuse()))  # Y+
+    s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=-10.0, material=material.Diffuse()))  # Y-
 
     s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0, material=material.Diffuse())) # Z+
     s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Diffuse()))   # Z-

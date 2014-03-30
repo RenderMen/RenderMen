@@ -11,4 +11,4 @@ class Camera(mongoengine.Document):
 
     position = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, -10.0, 0.0])
     direction = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.0, 1.0, 0.0])
-    field_of_view = mongoengine.FloatField(default=math.pi * 0.5)
+    field_of_view = mongoengine.FloatField(default=math.pi * 0.33)
