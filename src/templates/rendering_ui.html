@@ -4,12 +4,14 @@
 
 <div class="container">
 
+    <div id="rendering" data-id="{{rendering.id}}"></div>
+
     <h1 class="big-title">
-        Rendering page
+        {{rendering.scene.title}} <small>({{rendering.width}} x {{rendering.height}} - {{rendering.scene.primitives|length}} shapes - {{rendering.samples}}x{{rendering.samples}} sampling)</small>
     </h1>
 
     <p class="alert alert-info">
-        Rendering result
+        {{rendering.scene.description}}
     </p>
 
     <div id="user-info" data-email="{{user.email}}"></div>

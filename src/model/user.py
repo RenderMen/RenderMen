@@ -17,7 +17,7 @@ class User(mongoengine.Document):
 
     salt = mongoengine.StringField(default=None)
     secret_hash = mongoengine.StringField(default=None)
-    credits = mongoengine.IntField(default=50)
+    credits = mongoengine.LongField(default=50)
     pixels = mongoengine.LongField(default=0)
     picture = mongoengine.StringField()
 

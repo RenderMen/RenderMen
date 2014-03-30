@@ -54,13 +54,19 @@ def index():
 @app.route("/automatic_rendering")
 @requires_login
 def auto_render():
-    return render_template('index.html')
+    return render_template('auto-dispatch.html')
 
 @app.route("/renderings")
 @requires_login
 def renderings():
     renderings = Rendering.objects()
     return render_template('renderings.html', renderings=renderings)
+
+@app.route("/rendering/<rendering_id>")
+@requires_login
+def rendering_page(rendering_id):
+    rendering = Rendering.objects.get(id=rendering_id)
+    return render_template('rendering_ui.html', rendering=rendering)
 
 @app.route("/profile")
 @requires_login
@@ -80,6 +86,13 @@ def add_scene():
 @socketio.on('connect', namespace='/rendering')
 def socket_connect():
     pass
+
+@socketio.on('disconnect', namespace='/rendering')
+def on_leave():
+    load_request_user()
+    for assignment in Assignment.objects(assigned_to=g.user, status=Assignment.ASSIGNED):
+        assignment.status = Assignment.UNASSIGNED
+        assignment.assigned_to = None
 
 @socketio.on('get rendering', namespace='/rendering')
 def socket_get_rendering(message):
@@ -124,11 +137,13 @@ def socket_assignment_completed(message):
     completed_pixels = int(assignment.width * assignment.height)
 
     g.user.pixels += completed_pixels
-    g.user.credits += int(completed_pixels / 10000.0)
-    g.user.save()
-
     rendering_author = assignment.rendering_author
-    rendering_author.credits = min(0, rendering_author.credits - completed_pixels)
+
+    if g.user != rendering_author:
+        g.user.credits += 1
+        rendering_author.credits = max(0, rendering_author.credits - 1)
+
+    g.user.save()
     rendering_author.save()
 
     emit('incoming assignment', dict(assignment=assignment.to_dict()), room='rendering_{}'.format(assignment.rendering.id))

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <h1 class="big-title">
+        Automatic rendering dispatching
+    </h1>
+
+    <p class="alert alert-success">
+        Please wait while we're finding the perfect scene for you...
+    </p>
+
+    <div id="user-info" data-email="{{user.email}}"></div>
+
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/js/socket.io.js"></script>
+<script src="/static/js/auto-dispatch.js"></script>
+
+{% endblock %}
