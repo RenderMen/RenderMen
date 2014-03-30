@@ -41,31 +41,17 @@ GLContext.prototype.processAssignment = function(assignment, shaderCode) {
 
     gl.viewport(render_x, render_y, render_width, render_height);
     this.drawFullscreenQuad(texture);
+
+    var pixels = this.getPixels(assignment, texture);
+
+    gl.deleteTexture(texture);
+
+    return pixels;
 }
-
-GLContext.prototype.drawFullscreenQuad = function(texture) {
-    var gl = this.context;
-
-    var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
-    assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
-
-    gl.useProgram(this.fullscreenProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.enableVertexAttribArray(vertexLoc);
-
-    gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-    gl.disableVertexAttribArray(vertexLoc);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.useProgram(null);
-};
 
 // Draw into the glContext framebuffer nbSamples times using the given program
 GLContext.prototype.rayTrace = function(assignment, program) {
-    var gl = glContext.context;
+    var gl = this.context;
 
     var render_width = parseInt(assignment["width"]);
     var render_height = parseInt(assignment["height"]);
@@ -79,7 +65,6 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, render_width, render_height, 0, gl.RGBA, gl.FLOAT, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    this.fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
@@ -179,6 +164,60 @@ GLContext.prototype.rayTrace = function(assignment, program) {
     return texture;
 }
 
+GLContext.prototype.drawFullscreenQuad = function(texture) {
+    var gl = this.context;
+
+    var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
+    assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
+
+    gl.useProgram(this.fullscreenProgram);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.enableVertexAttribArray(vertexLoc);
+
+    gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.disableVertexAttribArray(vertexLoc);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
+};
+
+GLContext.prototype.getPixels = function(assignment, texture) {
+    var gl = this.context;
+
+    var render_width = parseInt(assignment["width"]);
+    var render_height = parseInt(assignment["height"]);
+
+    gl.viewport(0, 0, render_width, render_height);
+
+    var integerTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, integerTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, render_width, render_height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, integerTexture, 0);
+
+    this.drawFullscreenQuad(texture);
+
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    var pixels = new Uint8Array(4 * render_width * render_height);
+
+    gl.bindTexture(gl.TEXTURE_2D, integerTexture);
+    gl.readPixels(0, 0, render_width, render_height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.deleteTexture(integerTexture);
+
+    return pixels;
+}
 
 function fetchAssignment() {
     apiCall('/api/rendering/' + glContext.current_rendering['_id']['$oid'] + '/assignment', 'GET', {}, function(data) {
@@ -195,7 +234,7 @@ function fetchAssignment() {
         }
 
         // Otherwise we process the given assignment
-        glContext.processAssignment(data.result.assignment, data.result.shader);
+        var pixels = glContext.processAssignment(data.result.assignment, data.result.shader);
 
         // And once that's done, we look for another assignment
         fetchAssignment();
