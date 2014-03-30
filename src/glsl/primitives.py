@@ -147,22 +147,75 @@ intersect_cube(vec3 cubeMin, vec3 cubeMax)
 }
 
 int
-intersect_triangle(vec3 p0, vec3 p1, vec3 p2)
+intersect_triangle(vec3 A, vec3 B, vec3 C)
 {
-    vec3 p0p1 = p1 - p0;
-    vec3 p0p2 = p2 - p0;
-    vec3 normal = cross(p0p1, p0p2);
+    vec3 AB = B - A;
+    vec3 AC = C - A;
+    vec3 normal = cross(AB, AC);
 
-    float nDotRay = dot(normal, ray_dir);
+    float distance_from_plan = dot(ray_origin - A, normal);
 
-    // The ray is parallel
-    if(abs(nDotRay) < 0.0001) //FIXME
+    float normal_dot_ray = dot(normal, ray_dir);
+
+    float distance = -distance_from_plan / normal_dot_ray;
+
+    if(distance < MATH_EPSILON || distance > ray_intersection_dist)
     {
         return 0;
     }
 
-    float d = dot(normal, p0);
-    float t = -(dot(normal, ray_origin) + d) / nDotRay;
+    vec3 intersection = ray_origin + distance * ray_dir - A;
+
+    float basisDot = dot(AB, AC);
+    float invSquaredLengthAB = 1.0 / dot(AB, AB);
+    float invSquaredLengthAC = 1.0 / dot(AC, AC);
+
+    float uh2 = basisDot * invSquaredLengthAB;
+    float vh1 = basisDot * invSquaredLengthAC;
+
+    float invDet = 1.0 / (1.0 - uh2 * vh1);
+
+    float h1 = dot(intersection, AB) * invSquaredLengthAB;
+    float h2 = dot(intersection, AC) * invSquaredLengthAC;
+
+    float u = (h1 - h2 * uh2) * invDet;
+
+    if(u < 0.0)
+    {
+        return 0;
+    }
+
+    float v = (h2 - vh1 * h1) * invDet;
+
+    if((v < 0.0) || ((u + v) > 1.0))
+    {
+        return 0;
+    }
+
+    ray_intersection_dist = distance;
+    attr_pos = ray_origin + ray_intersection_dist * ray_dir;
+    attr_normal = normalize(normal);
+
+    return 1;
+}
+
+int
+intersect_triangle2(vec3 A, vec3 B, vec3 C)
+{
+    vec3 AB = B - A;
+    vec3 AC = C - A;
+    vec3 normal = cross(AB, AC);
+
+    float normal_dot_ray = dot(normal, ray_dir);
+
+    // The ray is parallel
+    if(abs(normal_dot_ray) < 0.0001) //FIXME
+    {
+        return 0;
+    }
+
+    float d = dot(normal, A);
+    float t = -(dot(normal, ray_origin) + d) / normal_dot_ray;
 
     //if(t < 0.0)
     //{
@@ -173,16 +226,16 @@ intersect_triangle(vec3 p0, vec3 p1, vec3 p2)
     vec3 phit = ray_origin + t * ray_dir;
 
     // Inside-out test edge0
-    vec3 edge0 = phit - p0;
-    float v = dot(normal, cross(p0p1, edge0));
+    vec3 edge0 = phit - A;
+    float v = dot(normal, cross(AB, edge0));
     if(v < 0.0) // Outside triangle
     {
         return 0;
     }
 
     // Inside-out test edge1
-    vec3 edge1 = phit - p1;
-    vec3 p1p2 = p2 - p1;
+    vec3 edge1 = phit - B;
+    vec3 p1p2 = C - B;
     float w = dot(normal, cross(p1p2, edge1));
     if(w < 0.0) // Outside triangle
     {
@@ -190,8 +243,8 @@ intersect_triangle(vec3 p0, vec3 p1, vec3 p2)
     }
 
     // Inside-out test edge2
-    vec3 edge2 = phit - p2;
-    vec3 p2p0 = p0 - p2;
+    vec3 edge2 = phit - C;
+    vec3 p2p0 = A - C;
     float u = dot(normal, cross(p2p0, edge2));
     if(u < 0.0) // Outside triangle
     {
@@ -201,8 +254,6 @@ intersect_triangle(vec3 p0, vec3 p1, vec3 p2)
     ray_intersection_dist = t;
     attr_pos = phit;
     attr_normal = normalize(normal);
-
-    ray_color = attr_normal;
 
     return 1;
 }
@@ -307,21 +358,21 @@ class Cube(Abstract):
 
 class Triangle(Abstract):
     """
-        p0 = vec3
-        p1 = vec3
-        p2 = vec3
+        A = vec3
+        B = vec3
+        C = vec3
     """
 
-    p0 = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [-0.5, 2.0, 2.5])
-    p1 = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.5, 2.0, 1.5])
-    p2 = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.5, 2.0, 4.5])
+    A = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [-0.5, 2.0, 2.5])
+    B = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.5, 2.0, 1.5])
+    C = mongoengine.ListField(mongoengine.FloatField(), default=lambda : [0.5, 2.0, 4.5])
 
     def intersect_call(self):
-        code_tmplt = "intersect_triangle({p0}, {p1}, {p2})"
+        code_tmplt = "intersect_triangle({A}, {B}, {C})"
 
         return code_tmplt.format(
-            p0=utils.code_vec(self.p0),
-            p1=utils.code_vec(self.p1),
-            p2=utils.code_vec(self.p2),
+            A=utils.code_vec(self.A),
+            B=utils.code_vec(self.B),
+            C=utils.code_vec(self.C),
         )
 

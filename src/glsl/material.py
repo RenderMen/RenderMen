@@ -40,6 +40,12 @@ material_glossy(vec3 albedo)
     ray_continue(new_ray_dir);
 }
 
+void
+material_translucent(vec3 albedo)
+{
+
+}
+
 """
 
 
