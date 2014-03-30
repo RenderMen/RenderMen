@@ -191,7 +191,9 @@ function fetchAssignment() {
         if (data.result.completed) {
             console.log("Rendering completed !");
             fetchRendering();
+            return;
         }
+
         // Otherwise we process the given assignment
         glContext.processAssignment(data.result.assignment, data.result.shader);
 
