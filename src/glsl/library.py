@@ -211,7 +211,7 @@ main()
     float rbt = random() * 2.0 * MATH_PI;
     float rbr = sqrt(random());
 
-    vec2 blur_offset = rbr * vec2(cos(rbt), sin(rbt));
+    vec2 blur_offset = (camera_blur_factor * rbr) * vec2(cos(rbt), sin(rbt));
 
     vec3 ray_focal_passby = focal_plan_pos + (focal_plan_u * screen_coord.x) * u + (focal_plan_v * screen_coord.y) * v;
     vec3 ray_pos = camera_plan_pos + (camera_plan_u * (screen_coord.x + blur_offset.x)) * u + (camera_plan_v * (screen_coord.y + blur_offset.y * image_aspect_ratio)) * v;
