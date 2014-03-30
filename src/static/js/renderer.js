@@ -250,7 +250,7 @@ GLContext.prototype.drawPixels = function(assignment, pixel_array) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, integerTexture, 0);
 
-    this.drawFullscreenQuad(texture);
+    this.drawFullscreenQuad(integerTexture);
 
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -308,6 +308,10 @@ function main() {
 
         // We send the rendered pixels to the server
         socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
+    });
+
+    socket.on('incoming assignment', function(data) {
+        glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
 }
 

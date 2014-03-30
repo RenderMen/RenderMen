@@ -54,11 +54,9 @@ class Rendering(mongoengine.Document):
     date_created = mongoengine.DateTimeField(default=datetime.now)
 
     def get_assignment(self):
-
         for assignment in Assignment.objects(rendering=self):
             if assignment.status != Assignment.UNASSIGNED:
                 continue
-
             return assignment
 
         return None
