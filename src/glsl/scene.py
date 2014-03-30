@@ -138,8 +138,8 @@ def boiler_scene(user, title, description):
     s.add(primitives.Sphere(center=[0.0, 0.0, 10.0], radius=3.0, material=material.Emit(color=[12.0, 12.0, 12.0])))
     s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0, material=material.Mirror()))
     s.add(primitives.Sphere(center=[-4.0, 3.0, 1.0], radius=1.0))#, material=material.Glossy()))
-    s.add(primitives.Sphere(center=[0.0, 3.0, 1.0], radius=1.0))#, material=material.Mirror()))
-    s.add(primitives.Sphere(center=[-2.5, 1.0, 1.0], radius=1.0))#, material=material.Glossy()))
+    s.add(primitives.Sphere(center=[-1.0, -1.0, 1.0], radius=1.0))#, material=material.Mirror()))
+    s.add(primitives.Sphere(center=[-2.5, 1.0, 2.5], radius=2.0, albedo=[1.0, 1.0, 1.0], material=material.Transparent(refract_factor=0.94)))
     s.add(primitives.Cube(cubeMin=[2.0, -2.0, 1.0], cubeMax=[5.5, 2.0, 3.0], material=material.Mirror()))
     s.add(primitives.Triangle(A=[-6.5, 5.0, 0.0], B=[-2.0, 6.5, 0.0], C=[-6.5, 5.0, 5.0]
         , material = material.Mirror()))
