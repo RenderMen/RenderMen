@@ -304,7 +304,7 @@ function main() {
         // If the rendering is completed, we look for another rendering to complete
         if (data.result.completed) {
             console.log("Rendering completed !");
-            fetchRendering();
+            socket.emit('get rendering');
             return;
         }
 
