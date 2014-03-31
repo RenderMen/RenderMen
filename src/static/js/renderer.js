@@ -235,6 +235,7 @@ GLContext.prototype.getPixels = function(assignment, texture) {
 }
 
 GLContext.prototype.drawPixels = function(assignment, pixel_array, opacity) {
+    opacity = 1.0;
     var pixels = new Uint8Array(pixel_array);
     var gl = this.context;
 
@@ -279,44 +280,10 @@ function main() {
     $canvas.attr('width', rendering.width);
     $canvas.attr('height', rendering.height);
 
-    // Fetching previous completed assignments for this rendering
-    socket.emit('get previous assignments', {rendering_id: glContext.current_rendering.id});
-
-    // Fetching an assignment for this rendering
-    socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
-
-
-    socket.on('new assignment', function(data) {
-        if (!data.ok) {
-            console.log("Couldn't fetch a rendering !");
-            return;
-        }
-
-        // If the rendering is completed, we look for another rendering to complete
-        if (data.result.completed) {
-            console.log("Rendering completed !");
-            fetchRendering();
-            return;
-        }
-
-        // Otherwise we process the given assignment
-        var assignment = data.result.assignment;
-        var pixels = glContext.processAssignment(assignment, data.result.shader);
-
-        // We send the rendered pixels to the server
-        //socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
-
-        // And once that's done, we look for another assignment
-        socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
-    });
-
     socket.on('incoming assignment', function(data) {
         var assignment_author_email = data.assignment.assigned_to;
         var user_email = $("#user-info").attr("data-email");
 
-        if (assignment_author_email == user_email) {
-            return;
-        }
 
         glContext.drawPixels(data.assignment, data.assignment.pixels);
     });
@@ -327,6 +294,36 @@ function main() {
             glContext.drawPixels(assignment, assignment.pixels);
         })
     });
+
+    socket.on('new assignment', function(data) {
+        if (!data.ok) {
+            console.log("Couldn't fetch a rendering !");
+            return;
+        }
+
+        // If the rendering is completed, we look for another rendering to complete
+        if (data.result.completed) {
+            console.log("Rendering completed !");
+            socket.emit('get rendering');
+            return;
+        }
+
+        // Otherwise we process the given assignment
+        var assignment = data.result.assignment;
+        var pixels = glContext.processAssignment(assignment, data.result.shader);
+
+        // We send the rendered pixels to the server
+        socket.emit('assignment completed', {assignment_id: assignment['_id']['$oid'], pixels:byteToString(pixels)});
+
+        // And once that's done, we look for another assignment
+        socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
+    });
+
+    // Fetching previous completed assignments for this rendering
+    socket.emit('get previous assignments', {rendering_id: glContext.current_rendering.id});
+
+    // Fetching an assignment for this rendering
+    socket.emit('get assignment', {rendering_id: glContext.current_rendering.id});
 
 }
 
