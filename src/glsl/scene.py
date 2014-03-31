@@ -198,7 +198,7 @@ def boiler_scene(user, title, description):
     s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=10.0, material=material.Diffuse()))  # Y-
 
     s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0, material=material.Diffuse())) # Z+
-    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Glossy(hardness=1.4)))   # Z-
+    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Diffuse()))#Glossy(hardness=1.4)))   # Z-
 
     return s
 
@@ -207,7 +207,7 @@ def pyramide_scene(user, title, description):
     s.camera.look_from = [-8, 7, 7]
     s.camera.look_at = [0.0, 0.0, 0.0]
     #s.camera.field_of_view = math.pi * 0.1
-    s.camera.blur_factor = 0.4
+    s.camera.blur_factor = 0
 
     s.add(primitives.Sphere(center=[0.0, 0.0, 10.0], radius=3.0, material=material.Emit(color=[12.0, 12.0, 12.0])))
 
@@ -224,7 +224,7 @@ def pyramide_scene(user, title, description):
     s.add(primitives.Sphere(center=[-4 * sqrt2 + 3, 3.0, 1.0 + sqrt2], radius=1.0, material=material.Mirror()))
     s.add(primitives.Sphere(center=[-sqrt2, 3.0, 1.0 + 2 * sqrt2], radius=1.0, material=material.Mirror()))
 
-    s.add(primitives.Cube(cubeMin=[-6.0, -4.0, 1.0], cubeMax=[4.0, -3.0, 4.0], material=material.Mirror()))
+    s.add(primitives.Cube(cubeMin=[-6.0, -4.0, 1.0], cubeMax=[4.0, -3.5, 4.0], material=material.Mirror()))
 
     #s.add(primitives.Triangle(A=[0.0, 0.0, 1.0], B=[1.0, 0.0, 1.0], C=[0.0, 1.0, 1.0]
             #, material=material.Mirror()))
@@ -248,7 +248,7 @@ def pyramide_scene(user, title, description):
     s.add(primitives.Plan(normal=[0.0, 1.0, 0.0], distance=10.0, material=material.Diffuse()))  # Y-
 
     s.add(primitives.Plan(normal=[0.0, 0.0, -1.0], distance=10.0, material=material.Diffuse())) # Z+
-    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Glossy(hardness=1.4)))   # Z-
+    s.add(primitives.Plan(normal=[0.0, 0.0, 1.0], distance=0.0, material=material.Diffuse()))#material.Glossy(hardness=1.4)))   # Z-
 
     return s
 

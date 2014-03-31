@@ -27,8 +27,8 @@ def gen_db():
     pyramideScene.save()
 
     #Rendering.create(width=1000, height=600, samples=16, scene=glsl_scene).save()
-    Rendering.create(width=600, height=400, samples=64, scene=another_glsl_scene, max_iterations=5).save()
-    Rendering.create(width=600, height=400, samples=64, scene=pyramideScene, max_iterations=5).save()
+    Rendering.create(width=1366, height=768, samples=64, scene=another_glsl_scene, max_iterations=5).save()
+    Rendering.create(width=1366, height=768, samples=128, scene=pyramideScene, max_iterations=5).save()
 
     print '. Generated dummy data !'
 
