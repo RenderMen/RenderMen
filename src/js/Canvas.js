@@ -76,6 +76,50 @@ GLContext.prototype.drawFullscreenQuad = function(texture)
     gl.useProgram(null);
 };
 
+GLContext.prototype.getPixels = function(texture) {
+    var gl = this.context;
+    var program = this.program.fullscreenClear;
+
+    var width = texture.width;
+    var height = texture.height;
+
+    gl.viewport(0, 0, width, height);
+
+    var integerTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, integerTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, integerTexture, 0);
+
+    this.drawFullscreenQuad(texture);
+
+    var pixel_count = 4 * render_width * render_height;
+    var pixels = new Uint8Array(pixel_count);
+
+    gl.bindTexture(gl.TEXTURE_2D, integerTexture);
+    gl.readPixels(0, 0, render_width, render_height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.deleteTexture(integerTexture);
+
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    var pixel_array = new Array(pixel_count);
+
+    for (var i = 0; i < pixel_count; i++)
+    {
+        pixel_array[i] = pixels[i];
+    }
+
+    return pixel_array;
+}
+
 
 
 
