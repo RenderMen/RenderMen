@@ -16,16 +16,42 @@ function Canvas(canvasId)
     // Fullscreen vertex buffer
     this.createFullscreenBuffer(this);
 
-    // Fullscreen blit program
+    // Fullscreen programs
     this.buildProgramFullscreenCopy();
+    this.buildProgramFullscreenClear();
 
     // FBO
     this.fbo = gl.createFramebuffer();
 
+    /*
+     * WebGL context initialization
+     */
     gl.disable(gl.DEPTH_TEST);
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    /*
+     * clear frame buffer
+     */
+    this.clear();
+}
+
+Canvas.prototype.clear = function()
+{
+    var gl = this.gl;
+    var program = this.program.fullscreenClear;
+
+    var vertexLoc = gl.getAttribLocation(program, "vertex");
+    assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
+
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
+    gl.enableVertexAttribArray(vertexLoc);
+    gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.disableVertexAttribArray(vertexLoc);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
 }
 
 /*
@@ -107,14 +133,11 @@ Canvas.prototype.createProgram = function(vertexCode, fragmentCode)
     return program;
 }
 
-
 Canvas.prototype.buildProgramFullscreenCopy = function()
 {
     var fullscreenVertexShader =
 "precision highp float; \
 attribute vec2 vertex; \
-uniform float width; \
-uniform float height; \
 varying vec2 texcoord; \
 varying vec4 position; \
 void \
@@ -130,13 +153,41 @@ main() \
 "precision highp float; \
 varying vec2 texcoord; \
 uniform sampler2D texture; \
-uniform float opacity; \
 void \
 main() \
 { \
-    gl_FragColor = mix(vec4(1.0), texture2D(texture, texcoord), opacity); \
+    gl_FragColor = texture2D(texture, texcoord); \
 } \
 ";
 
     this.program.fullscreenCopy = this.createProgram(fullscreenVertexShader, fullscreenFragmentShader);
+}
+
+Canvas.prototype.buildProgramFullscreenClear = function()
+{
+    var fullscreenVertexShader =
+"precision highp float; \
+attribute vec2 vertex; \
+varying vec4 position; \
+void \
+main() \
+{ \
+    gl_Position = vec4(vertex, 0.0, 1.0); \
+    position = gl_Position; \
+} \
+";
+
+    var fullscreenFragmentShader =
+"precision highp float; \
+void \
+main() \
+{ \
+    ivec2 coord = ivec2(gl_FragCoord.xy) / 8; \
+    int sum = coord.x + coord.y; \
+    float factor = float(sum - 2 * (sum / 2)); \
+    gl_FragColor = mix(vec4(0.8, 0.8, 0.8, 1.0), vec4(1.0), factor); \
+} \
+";
+
+    this.program.fullscreenClear = this.createProgram(fullscreenVertexShader, fullscreenFragmentShader);
 }
