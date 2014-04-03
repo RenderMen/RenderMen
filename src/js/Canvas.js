@@ -54,6 +54,32 @@ Canvas.prototype.clear = function()
     gl.useProgram(null);
 }
 
+GLContext.prototype.drawFullscreenQuad = function(texture)
+{
+    var gl = this.context;
+    var program = this.program.fullscreenClear;
+
+    var vertexLoc = gl.getAttribLocation(this.fullscreenProgram, "vertex");
+    assert(vertexLoc != -1, "Invalid location of attribute \"vertex\"");
+
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenBuffer);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.enableVertexAttribArray(vertexLoc);
+    gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 8, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.disableVertexAttribArray(vertexLoc);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.useProgram(null);
+};
+
+
+
+
+
 /*
  * Creates Canvas's fullscreen buffer
  */
