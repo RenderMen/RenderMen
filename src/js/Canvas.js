@@ -54,7 +54,7 @@ Canvas.prototype.clear = function()
     gl.useProgram(null);
 }
 
-GLContext.prototype.drawFullscreenQuad = function(texture)
+Canvas.prototype.drawFullscreenQuad = function(texture)
 {
     var gl = this.context;
     var program = this.program.fullscreenClear;
@@ -76,7 +76,7 @@ GLContext.prototype.drawFullscreenQuad = function(texture)
     gl.useProgram(null);
 };
 
-GLContext.prototype.getPixels = function(texture) {
+Canvas.prototype.getPixels = function(texture) {
     var gl = this.context;
     var program = this.program.fullscreenClear;
 
