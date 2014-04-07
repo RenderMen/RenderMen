@@ -27,14 +27,14 @@ MeshOctreeNode.prototype.split = function()
     assert(this.children.length == 0, "Cannot split node with children");
 
     // Create the 8 children
-    // (min.x, min.y, min.z)
-    // (min.x, min.y, max.z)
-    // (min.x, max.y, min.z)
-    // (min.x, max.y, max.z)
-    // (max.x, min.y, min.z)
-    // (max.x, min.y, max.z)
-    // (max.x, max.y, min.z)
-    // (max.x, max.y, max.z)
+    // (min.x, min.y, min.z) : 000
+    // (max.x, min.y, min.z) : 001
+    // (min.x, max.y, min.z) : 010
+    // (max.x, max.y, min.z) : 011
+    // (min.x, min.y, max.z) : 100
+    // (max.x, min.y, max.z) : 101
+    // (min.x, max.y, max.z) : 110
+    // (max.x, max.y, max.z) : 111
     for(var i = 0; i < 8; i++)
     {
         this.children.push(new MeshOctreeNode());
