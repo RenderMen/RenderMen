@@ -16,7 +16,7 @@ function MeshOctreeNode(daddy)
  */
 MeshOctreeNode.prototype.append = function(indice)
 {
-    this.triangles.append(indice);
+    this.triangles.push(indice);
 }
 
 /*
@@ -37,6 +37,6 @@ MeshOctreeNode.prototype.split = function()
     // (max.x, max.y, max.z)
     for(var i = 0; i < 8; i++)
     {
-        this.children.append(new MeshOctreeNode());
+        this.children.push(new MeshOctreeNode());
     }
 }

@@ -7,12 +7,12 @@ function assert(condition, message)
     }
 }
 
-function max(x, y, z)
+function max3(x, y, z)
 {
     return Math.max(x, Math.max(y, z));
 }
 
-function min(x, y, z)
+function min3(x, y, z)
 {
     return Math.min(x, Math.min(y, z));
 }

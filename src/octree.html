@@ -2,8 +2,11 @@
 
     <title>RenderMen 2.0</title>
 
+    <script type="text/javascript" src="js/inheritance.js"></script>
+    <script type="text/javascript" src="js/lib/gl-matrix.js"></script>
     <script type="text/javascript" src="js/utils.js"></script>
     <script type="text/javascript" src="js/Vector3.js"></script>
+    <script type="text/javascript" src="js/Box.js"></script>
     <script type="text/javascript" src="js/Mesh.js"></script>
     <script type="text/javascript" src="js/MeshAttributes.js"></script>
     <script type="text/javascript" src="js/MeshOctreeNode.js"></script>
@@ -13,9 +16,12 @@
 
         function main()
         {
+            <!--var v = Vector3.fromValues(42, -42, 1337);-->
+            <!--console.log(v[0] + " " + v[1] + " " + v[2]);-->
             var attr = new MeshAttributes(3);
             attr.append(-1.0, -2.0, -3.0);
             attr.append(1.0, 2.0, 3.0);
+            attr.append(5.0, -2.0, 1.0);
             var mesh = new Mesh();
             mesh.setAttributes("VERTEX", attr);
             var octree = new MeshOctree(mesh);

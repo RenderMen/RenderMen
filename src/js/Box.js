@@ -1,4 +1,4 @@
-// Require Vector3.js
+// Require lib/gl-matrix.js : vec3
 
 // Box class
 function Box(min_x, min_y, min_z, max_x, max_y, max_z)
@@ -10,6 +10,6 @@ function Box(min_x, min_y, min_z, max_x, max_y, max_z)
     max_y = max_y || 0;
     max_z = max_z || 0;
 
-    this.min = new Vector(min_x, min_y, min_z);
-    this.max = new Vector(max_x, max_y, max_z);
+    this.min = vec3.fromValues(min_x, min_y, min_z);
+    this.max = vec3.fromValues(max_x, max_y, max_z);
 }
