@@ -14,7 +14,7 @@ function Canvas(canvasId)
     assert(gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
 
     // Fullscreen vertex buffer
-    this.createFullscreenBuffer(this);
+    this.createFullscreenBuffer();
 
     // Fullscreen programs
     this.buildProgramFullscreenCopy();
