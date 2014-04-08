@@ -9,7 +9,7 @@
     <script type="text/javascript" src="js/MeshAttributes.js"></script>
     <script type="text/javascript" src="js/MeshOctreeNode.js"></script>
     <script type="text/javascript" src="js/MeshOctree.js"></script>
-
+    <script type="text/javascript" src="js/MeshOctreeDebug.js"></script>
     <script type="text/javascript">
 
         function main()
@@ -29,11 +29,14 @@
             var mesh = new Mesh();
             mesh.setAttributes("VERTEX", attr);
             var octree = new MeshOctree(mesh);
+            var octreeDebug = new MeshOctreeDebug(octree);
+            octreeDebug.draw();
         }
 
     </script>
 
     <body onload="main();">
+        <canvas id="canvas" width="640px" height="480px"></canvas>
     </body>
 
 </html>
