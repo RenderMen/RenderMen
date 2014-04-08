@@ -10,26 +10,88 @@
     <script type="text/javascript" src="js/MeshOctreeNode.js"></script>
     <script type="text/javascript" src="js/MeshOctree.js"></script>
     <script type="text/javascript" src="js/MeshOctreeDebug.js"></script>
+    <script type="text/javascript" src="js/MeshDebug.js"></script>
+    <script type="text/javascript" src="js/models/teapot.js"></script>
+    <script type="text/javascript" src="js/models/bunny.js"></script>
     <script type="text/javascript">
 
         function main()
         {
-            <!--var v = Vector3.fromValues(42, -42, 1337);-->
-            <!--console.log(v[0] + " " + v[1] + " " + v[2]);-->
             var attr = new MeshAttributes(3);
-            attr.append(-1.0, -2.0, -3.0);
-            attr.append(-1.0, -2.0, -3.0);
-            attr.append(-1.0, -2.0, -3.0);
-            attr.append(1.0, 2.0, 3.0);
-            attr.append(1.0, 2.0, 3.0);
-            attr.append(1.0, 2.0, 3.0);
-            attr.append(5.0, -2.0, 1.0);
-            attr.append(5.0, -2.0, 1.0);
-            attr.append(5.0, -2.0, 1.0);
-            var mesh = new Mesh();
-            mesh.setAttributes("VERTEX", attr);
+
+            var start = -4;
+            var end = 12;
+            var step = 7;
+
+            <!--attr.append(0.0, 2, 0.25);-->
+            <!--attr.append(-1.0, 0.0, 0.25);-->
+            <!--attr.append(1.0, 0.0, 0.25);-->
+
+            <!--attr.append(5 + 0.0, 2.0, 1 + 0.25);-->
+            <!--attr.append(5 - 1.0, 0.0, 1 + 0.25);-->
+            <!--attr.append(5 + 1.0, 0.0, 1 + 0.25);-->
+
+            <!--attr.append(-5 + 0.0, 2.0, 1 + 0.25);-->
+            <!--attr.append(-5 - 1.0, 0.0, 1 + 0.25);-->
+            <!--attr.append(-5 + 1.0, 0.0, 1 + 0.25);-->
+
+            <!--attr.append(-5 + 0.0, 5 + 2.0, 1 + 0.25);-->
+            <!--attr.append(-5 - 1.0, 5 + 0.0, 1 + 0.25);-->
+            <!--attr.append(-5 + 1.0, 5 + 0.0, 1 + 0.25);-->
+
+            <!--attr.append(5 + 0.0, 5 + 2.0, 1 + 0.25);-->
+            <!--attr.append(5 - 1.0, 5 + 0.0, 1 + 0.25);-->
+            <!--attr.append(5 + 1.0, 5 + 0.0, 1 + 0.25);-->
+
+
+            <!--for(var i = start; i < end; i += step) {-->
+              <!--for(var j = start; j < end; j += step) {-->
+                <!--for(var k = start; k < end; k += step) {-->
+                  <!--attr.append(i - 3.25 + 0.0, j - 2.0 - 1.0, 0.25 + k);-->
+                  <!--attr.append(i - 3.25 - 1.0, j - 2.0 - 0.0, 0.25 + k);-->
+                  <!--attr.append(i - 3.25 + 1.0, j - 2.0 - 0.0, 0.25 + k);-->
+                <!--}-->
+              <!--}-->
+            <!--}-->
+
+            <!--attr.append(2.0, 5.0, 2.0);-->
+            <!--attr.append(+1.0, 4.0, 2.0);-->
+            <!--attr.append(+1.0, 6.0, +1.0);-->
+
+            <!--attr.append(0.0, 3.0, 0.0);-->
+            <!--attr.append(-1.5, 0.0, 0.0);-->
+            <!--attr.append(1.5, 0.0, 0.0);-->
+
+            <!--attr.append(7 + 0.0, 2.0, 0.0);-->
+            <!--attr.append(7 + -1.0, 0.0, 0.0);-->
+            <!--attr.append(7 + 1.0, 0.0, 0.0);-->
+
+            <!--attr.append(7 + -0.1, 2.0, +1.0);-->
+            <!--attr.append(7 + -0.35, 3.0, +1.0);-->
+            <!--attr.append(7 + -0.35, 2.0, 2.0);-->
+
+            <!--attr.append(-0.1, -4.0, -0.1);-->
+            <!--attr.append(+0.1, -4.0, -0.1);-->
+            <!--attr.append(+0.1, -4.0, +0.1);-->
+            <!--attr.append(+0.1, -4.0, +0.1);-->
+            <!--attr.append(-0.1, -4.0, +0.1);-->
+            <!--attr.append(-0.1, -4.0, -0.1);-->
+
+
+
+            <!--var mesh = new Mesh();-->
+            <!--mesh.setAttributes("VERTEX", attr);-->
+
+            var mesh = teapot;
+
+            <!--var mesh = bunny;-->
+
+            var meshDebug = new MeshDebug(mesh);
+
             var octree = new MeshOctree(mesh);
             var octreeDebug = new MeshOctreeDebug(octree);
+
+            meshDebug.draw();
             octreeDebug.draw();
         }
 

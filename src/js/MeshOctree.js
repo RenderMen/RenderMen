@@ -19,7 +19,7 @@ function MeshOctree(mesh)
     this.pos = vec3.fromValues(0.0, 0.0, 0.0);
 
     // Maximum depth of the octree
-    this.max_depth = 4;
+    this.maxDepth = 16;
 
     this.init();
 }
@@ -64,6 +64,9 @@ MeshOctree.prototype.init = function()
         max[2] - min[2]
     ));
 
+    console.log("Min: " + vec3.str(min) + " | max: " + vec3.str(max));
+    console.log("Max dim: (" + (max[0] - min[0]) + ", " + (max[1] - min[1]) + ", " + (max[2] - min[2]) + ")");
+
     this.dim[0] = max_dim;
     this.dim[1] = max_dim;
     this.dim[2] = max_dim;
@@ -73,9 +76,9 @@ MeshOctree.prototype.init = function()
     // Debug
     {
         var center = vec3.fromValues(
-            (max[0] + min[0]) / 2.0,
-            (max[1] + min[1]) / 2.0,
-            (max[2] + min[2]) / 2.0
+            this.pos[0] + this.dim[0] / 2.0,
+            this.pos[1] + this.dim[1] / 2.0,
+            this.pos[2] + this.dim[2] / 2.0
         );
 
         console.log("Octree dim: " + vec3.str(this.dim));
@@ -154,7 +157,7 @@ MeshOctree.prototype.insert = function(indice, bounding)
         console.log(">> Iteration " + j++);
 
         if(
-           depth >= this.max_depth ||
+           depth >= this.maxDepth ||
            (b_size[0] > half_dim[0]) ||
            (b_size[1] > half_dim[1]) ||
            (b_size[2] > half_dim[2]) ||
@@ -164,6 +167,9 @@ MeshOctree.prototype.insert = function(indice, bounding)
         )
         {
             node.append(indice);
+            console.log("depth: " + depth + " | " + this.maxDepth);
+            console.log("b_size: " + vec3.str(b_size));
+            console.log("b.min: " + vec3.str(b.min) + " | b.max: " + vec3.str(b.max));
             console.log("Fitting node -> center: " + vec3.str(center) + " | half_dim: " + vec3.str(half_dim));
             break;
         }
@@ -275,8 +281,8 @@ MeshOctree.prototype.fast_insert = function(indice, bounding)
         (b.max[2] + b.min[2]) / 2.0
     );
 
-    console.log("Octree -> center: " + vec3.str(center));
-    console.log("Bounding box -> center: " + vec3.str(b_center) + " | size: " + vec3.str(b_size));
+    //console.log("Octree -> center: " + vec3.str(center));
+    //console.log("Bounding box -> center: " + vec3.str(b_center) + " | size: " + vec3.str(b_size));
 
     // Search for the fitting octree node
     var node = this.root;
@@ -284,8 +290,8 @@ MeshOctree.prototype.fast_insert = function(indice, bounding)
     var j = 0
     while(true)
     {
-        console.log(">> Iteration " + j++);
-        console.log("Octree node -> center: " + vec3.str(center) + " | half_dim: " + vec3.str(half_dim));
+        //console.log(">> Iteration " + j++);
+        //console.log("Octree node -> center: " + vec3.str(center) + " | half_dim: " + vec3.str(half_dim));
         var delta = 0;
         var straddle = false;
         var index = 0;
@@ -297,7 +303,7 @@ MeshOctree.prototype.fast_insert = function(indice, bounding)
 
             if(Math.abs(delta) <= b_size[i])
             {
-                console.log("Straddle -> delta(" + i + "): " + delta + " | b_size: " + vec3.str(b_size));
+                //console.log("Straddle -> delta(" + i + "): " + delta + " | b_size: " + vec3.str(b_size));
                 straddle = true;
                 break;
             }
@@ -306,9 +312,9 @@ MeshOctree.prototype.fast_insert = function(indice, bounding)
         }
 
         // Insert the triangle in the current node if there is straddling
-        if(straddle || depth++ >= this.max_depth)
+        if(straddle || depth++ >= this.maxDepth)
         {
-            console.log("Fitting node -> center: " + vec3.str(center) + " | half_dim: " + vec3.str(half_dim));
+            //console.log("Fitting node -> center: " + vec3.str(center) + " | half_dim: " + vec3.str(half_dim));
             node.append(indice);
             break;
         }

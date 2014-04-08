@@ -359,8 +359,7 @@ MeshOctreeDebug.prototype.drawCube = function(center, size)
 
     // Apply transformations to modelview matrix
     mat4.identity(this.mvMatrix);
-    //mat4.rotate(...);
-    //mat4.rotateY(this.mvMatrix, this.mvMatrix, Math.pi / 6.0);
+    //mat4.rotateY(this.mvMatrix, this.mvMatrix, Math.PI / 6.0);
     mat4.translate(this.mvMatrix, this.mvMatrix, center);
     mat4.scale(this.mvMatrix, this.mvMatrix, [size, size, size]);
 
@@ -452,15 +451,17 @@ MeshOctreeDebug.prototype.draw = function()
     var height = gl.drawingBufferHeight;
     gl.viewport(0, 0, width, height);
     gl.clearColor(0.0, 1.0, 1.0, 1.0);
+    //gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // Draw octree
     var octreeCenter = vec3.fromValues(
         this.octree.pos[0] + this.octree.dim[0] / 2.0,
         this.octree.pos[1] + this.octree.dim[1] / 2.0,
         this.octree.pos[2] + this.octree.dim[2] / 2.0
     );
 
-    this.drawNode(this.octree.root, octreeCenter, this.octree.dim[0]);
+    this.drawNode(this.octree.root, octreeCenter, this.octree.dim[0] / 2.0);
 }
