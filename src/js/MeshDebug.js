@@ -1,18 +1,18 @@
 // Require GL.js
 
-function MeshDebug(mesh, canvasId)
+function MeshDebug(mesh, renderer)
 {
-    // Mesh
-    this.mesh = mesh;
-    assert(mesh, "Invalid mesh");
-
-    // Canvas
-    this.canvas = document.getElementById(canvasId || "canvas");
+    assert(mesh, "Invalid mesh (null)");
+    assert(renderer, "Invalid renderer (null)");
 
     // GL context
-    this.gl = this.canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
-    assert(this.gl, "WebGL not supported");
-    assert(this.gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
+    this.gl = renderer.gl;
+
+    // Renderer
+    this.renderer = renderer;
+
+    // Mesh
+    this.mesh = mesh;
 
     // Shader program
     this.program  = null;
@@ -23,13 +23,18 @@ function MeshDebug(mesh, canvasId)
     // Vertex buffer containing the color of the vertices
     this.vertexColorBuffer = null;
 
+    // Model matrix
+    this.modelMatrix = null;
+
+    // Modelview matrix (to avoid reallocation)
+    this.mvMatrix = null;
 
     // Initialization
     this.init();
 }
 
 /*
- *
+ * Initialization
  */
 MeshDebug.prototype.init = function()
 {
@@ -72,11 +77,9 @@ MeshDebug.prototype.init = function()
 
     this.vertexPositionBuffer = this.createVertexPositionBuffer();
     this.vertexColorBuffer = this.createVertexColorBuffer(1.0, 0.0, 0.0);
-    this.mvMatrix = mat4.create();
-    this.pMatrix = mat4.create();
 
-    mat4.perspective(this.pMatrix, 70.0, this.gl.drawingBufferWidth / this.gl.drawingBufferHeight, 0.1, 100.0);
-    mat4.translate(this.pMatrix, this.pMatrix, [0, 0, -32]);
+    this.modelMatrix = mat4.create();
+    this.mvMatrix = mat4.create();
 }
 
 /*
@@ -179,10 +182,13 @@ MeshDebug.prototype.draw = function(pos, scale)
     pos   = pos || vec3.fromValues(0.0, 0.0, 0.0);
     scale = scale || 1.0;
 
-    // Apply transformations to modelview matrix
-    mat4.identity(this.mvMatrix);
-    //mat4.scale(this.mvMatrix, this.mvMatrix, [scale, scale, scale]);
-    //mat4.translate(this.mvMatrix, this.mvMatrix, pos);
+    // Apply transformations to model matrix
+    mat4.identity(this.modelMatrix);
+    mat4.scale(this.modelMatrix, this.modelMatrix, [scale, scale, scale]);
+    mat4.translate(this.modelMatrix, this.modelMatrix, pos);
+
+    // Compute modelview matrix
+    mat4.mul(this.mvMatrix, this.renderer.viewMatrix, this.modelMatrix);
 
     // Drawing options
     var width = gl.drawingBufferWidth;
@@ -193,47 +199,43 @@ MeshDebug.prototype.draw = function(pos, scale)
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    //gl.bindBuffer(gl.FRAMEBUFFER, this.framebuffer);
-    //{
-        gl.useProgram(this.program);
+    gl.useProgram(this.program);
+    {
+        // Send uniforms
+        gl.uniformMatrix4fv(this.program.mvMatrixUniform, false, this.mvMatrix);
+        gl.uniformMatrix4fv(this.program.pMatrixUniform, false, this.renderer.projMatrix);
+
+        // Send cube vertices
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
         {
-            // Send uniforms
-            gl.uniformMatrix4fv(this.program.mvMatrixUniform, false, this.mvMatrix);
-            gl.uniformMatrix4fv(this.program.pMatrixUniform, false, this.pMatrix);
-
-            // Send cube vertices
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-            {
-                gl.enableVertexAttribArray(this.program.vertexPositionAttr);
-                gl.vertexAttribPointer(
-                    this.program.vertexPositionAttr,
-                    this.vertexPositionBuffer.itemSize,
-                    gl.FLOAT, false, 0, 0
-                );
-            }
-
-            // Send cube colors
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
-            {
-                gl.enableVertexAttribArray(this.program.vertexColorAttr);
-                gl.vertexAttribPointer(
-                    this.program.vertexColorAttr,
-                    this.vertexColorBuffer.itemSize,
-                    gl.FLOAT, false, 0, 0
-                );
-            }
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-            console.log("Nb triangles: " + this.vertexPositionBuffer.nbItems / 3);
-
-            // Draw mesh
-            gl.drawArrays(gl.TRIANGLES, 0, this.vertexPositionBuffer.nbItems);
-
-            gl.disableVertexAttribArray(this.program.vertexColorAttr);
-            gl.disableVertexAttribArray(this.program.vertexPositionAttr);
+            gl.enableVertexAttribArray(this.program.vertexPositionAttr);
+            gl.vertexAttribPointer(
+                this.program.vertexPositionAttr,
+                this.vertexPositionBuffer.itemSize,
+                gl.FLOAT, false, 0, 0
+            );
         }
-        gl.useProgram(null);
-    //}
-    //gl.bindBuffer(gl.FRAMEBUFFER, null);
+
+        // Send cube colors
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexColorBuffer);
+        {
+            gl.enableVertexAttribArray(this.program.vertexColorAttr);
+            gl.vertexAttribPointer(
+                this.program.vertexColorAttr,
+                this.vertexColorBuffer.itemSize,
+                gl.FLOAT, false, 0, 0
+            );
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        console.log("Nb triangles: " + this.vertexPositionBuffer.nbItems / 3);
+
+        // Draw mesh
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexPositionBuffer.nbItems);
+
+        gl.disableVertexAttribArray(this.program.vertexColorAttr);
+        gl.disableVertexAttribArray(this.program.vertexPositionAttr);
+    }
+    gl.useProgram(null);
 }
 

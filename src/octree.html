@@ -10,6 +10,7 @@
     <script type="text/javascript" src="js/MeshAttributes.js"></script>
     <script type="text/javascript" src="js/MeshOctreeNode.js"></script>
     <script type="text/javascript" src="js/MeshOctree.js"></script>
+    <script type="text/javascript" src="js/DebugRenderer.js"></script>
     <script type="text/javascript" src="js/MeshOctreeDebug.js"></script>
     <script type="text/javascript" src="js/MeshDebug.js"></script>
     <script type="text/javascript" src="js/models/teapot.js"></script>
@@ -86,11 +87,11 @@
             var mesh = teapot;
 
             <!--var mesh = bunny;-->
-
-            var meshDebug = new MeshDebug(mesh);
-
             var octree = new MeshOctree(mesh);
-            var octreeDebug = new MeshOctreeDebug(octree);
+
+            var renderer = new DebugRenderer("canvas");
+            var meshDebug = new MeshDebug(mesh, renderer);
+            var octreeDebug = new MeshOctreeDebug(octree, renderer);
 
             meshDebug.draw();
             octreeDebug.draw();

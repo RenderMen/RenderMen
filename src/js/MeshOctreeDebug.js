@@ -1,19 +1,19 @@
 // Require lib/gl-matrix.js
 // Require GL.js
 
-function MeshOctreeDebug(octree, canvasId)
+function MeshOctreeDebug(octree, renderer)
 {
-    // Octree
     assert(octree, "Invalid octree");
-    this.octree = octree;
-
-    // Canvas
-    this.canvas = document.getElementById(canvasId || "canvas");
+    assert(renderer, "Invalid renderer (null)");
 
     // GL context
-    this.gl = this.canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
-    assert(this.gl, "WebGL not supported");
-    assert(this.gl.getExtension('OES_texture_float'), "Required \"OES_texture_float\" extension not supported");
+    this.gl = renderer.gl;
+
+    // Renderer
+    this.renderer = renderer;
+
+    // Octree
+    this.octree = octree;
 
     // Shader program
     this.program  = null;
@@ -27,18 +27,11 @@ function MeshOctreeDebug(octree, canvasId)
     // Vertex buffer containing the indices of the vertices of a cube.
     this.cubeVertexIndexBuffer = null;
 
-    // Framebuffer used for drawing
-    this.framebuffer = null;
+    // Model matrix
+    this.modelMatrix = null;
 
-    // Framebuffer
-    this.texture = null;
-
-    // Modelview matrix
+    // Modelview matrix (to avoid reallocation)
     this.mvMatrix = null;
-
-    // Projection matrix
-    this.pMatrix = null;
-
 
     // Initialization
     this.init();
@@ -90,11 +83,8 @@ MeshOctreeDebug.prototype.init = function()
     this.cubeVertexColorBuffer = GL.createCubeVertexColorBuffer(this.gl);
     this.cubeVertexIndexBuffer = GL.createCubeVertexIndexBuffer(this.gl);
     //this.framebuffer = GL.createFramebuffer();
+    this.modelMatrix = mat4.create();
     this.mvMatrix = mat4.create();
-    this.pMatrix = mat4.create();
-
-    mat4.perspective(this.pMatrix, 70.0, this.gl.drawingBufferWidth / this.gl.drawingBufferHeight, 0.1, 100.0);
-    mat4.translate(this.pMatrix, this.pMatrix, [0, 0, -32]);
 }
 
 
@@ -109,57 +99,54 @@ MeshOctreeDebug.prototype.drawCube = function(center, size)
     var gl = this.gl;
     assert(gl, "Invalid WebGL context");
 
-    // Apply transformations to modelview matrix
-    mat4.identity(this.mvMatrix);
-    //mat4.rotateY(this.mvMatrix, this.mvMatrix, Math.PI / 6.0);
-    mat4.translate(this.mvMatrix, this.mvMatrix, center);
-    mat4.scale(this.mvMatrix, this.mvMatrix, [size, size, size]);
+    // Apply transformations to model matrix
+    mat4.identity(this.modelMatrix);
+    //mat4.rotateY(this.modelMatrix, this.modelMatrix, Math.PI / 6.0);
+    mat4.translate(this.modelMatrix, this.modelMatrix, center);
+    mat4.scale(this.modelMatrix, this.modelMatrix, [size, size, size]);
 
-    //gl.bindBuffer(gl.FRAMEBUFFER, this.framebuffer);
-    //{
-        gl.useProgram(this.program);
+    // Compute modelview matrix
+    mat4.mul(this.mvMatrix, this.renderer.viewMatrix, this.modelMatrix);
+
+    gl.useProgram(this.program);
+    {
+        // Send uniforms
+        gl.uniformMatrix4fv(this.program.mvMatrixUniform, false, this.mvMatrix);
+        gl.uniformMatrix4fv(this.program.pMatrixUniform, false, this.renderer.projMatrix);
+
+        // Send cube vertices
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVertexPositionBuffer);
         {
-
-            // Send uniforms
-            gl.uniformMatrix4fv(this.program.mvMatrixUniform, false, this.mvMatrix);
-            gl.uniformMatrix4fv(this.program.pMatrixUniform, false, this.pMatrix);
-
-            // Send cube vertices
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVertexPositionBuffer);
-            {
-                gl.enableVertexAttribArray(this.program.vertexPositionAttr);
-                gl.vertexAttribPointer(
-                    this.program.vertexPositionAttr,
-                    this.cubeVertexPositionBuffer.itemSize,
-                    gl.FLOAT, false, 0, 0
-                );
-            }
-
-            // Send cube colors
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVertexColorBuffer);
-            {
-                gl.enableVertexAttribArray(this.program.vertexColorAttr);
-                gl.vertexAttribPointer(
-                    this.program.vertexColorAttr,
-                    this.cubeVertexColorBuffer.itemSize,
-                    gl.FLOAT, false, 0, 0
-                );
-            }
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-            // Send cube vertices' indices
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cubeVertexIndexBuffer);
-
-            // Draw cube
-            gl.drawElements(gl.LINES, this.cubeVertexIndexBuffer.nbItems, gl.UNSIGNED_SHORT, 0);
-            //gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-            gl.disableVertexAttribArray(this.program.vertexColorAttr);
-            gl.disableVertexAttribArray(this.program.vertexPositionAttr);
+            gl.enableVertexAttribArray(this.program.vertexPositionAttr);
+            gl.vertexAttribPointer(
+                this.program.vertexPositionAttr,
+                this.cubeVertexPositionBuffer.itemSize,
+                gl.FLOAT, false, 0, 0
+            );
         }
-        gl.useProgram(null);
-    //}
-    //gl.bindBuffer(gl.FRAMEBUFFER, null);
+
+        // Send cube colors
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.cubeVertexColorBuffer);
+        {
+            gl.enableVertexAttribArray(this.program.vertexColorAttr);
+            gl.vertexAttribPointer(
+                this.program.vertexColorAttr,
+                this.cubeVertexColorBuffer.itemSize,
+                gl.FLOAT, false, 0, 0
+            );
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+        // Send cube vertices' indices
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cubeVertexIndexBuffer);
+
+        // Draw cube
+        gl.drawElements(gl.LINES, this.cubeVertexIndexBuffer.nbItems, gl.UNSIGNED_SHORT, 0);
+
+        gl.disableVertexAttribArray(this.program.vertexColorAttr);
+        gl.disableVertexAttribArray(this.program.vertexPositionAttr);
+    }
+    gl.useProgram(null);
 }
 
 /*
