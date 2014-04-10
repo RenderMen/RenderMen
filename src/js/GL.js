@@ -190,6 +190,8 @@ GL.createFramebuffer = function(gl)
     var fbo = gl.createFramebuffer();
     assert(fbo, "Failed to create framebuffer object");
 
+    fbo.textures = new Array();
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     {
         fbo.width = gl.canvas.width;
@@ -206,6 +208,8 @@ GL.createFramebuffer = function(gl)
             gl.generateMipmap(gl.TEXTURE_2D);
         }
         gl.bindTexture(gl.TEXTURE_2D, null);
+
+        fbo.textures.push(texture);
 
         var renderbuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
