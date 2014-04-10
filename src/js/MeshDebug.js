@@ -1,3 +1,5 @@
+// Require GL.js
+
 function MeshDebug(mesh, canvasId)
 {
     // Mesh
@@ -56,7 +58,18 @@ MeshDebug.prototype.init = function()
         "}";
 
 
-    this.program = this.createProgram(vertexShaderSource, fragmentShaderSource);
+    this.program = GL.createProgram(this.gl, vertexShaderSource, fragmentShaderSource);
+
+    this.gl.useProgram(this.program);
+    {
+        this.program.vertexPositionAttr = this.gl.getAttribLocation(this.program, "vertexPosition");
+        this.program.vertexColorAttr    = this.gl.getAttribLocation(this.program, "vertexColor");
+        this.program.mvMatrixUniform    = this.gl.getUniformLocation(this.program, "mvMatrix");
+        this.program.pMatrixUniform     = this.gl.getUniformLocation(this.program, "pMatrix");
+    }
+    this.gl.useProgram(null);
+
+
     this.vertexPositionBuffer = this.createVertexPositionBuffer();
     this.vertexColorBuffer = this.createVertexColorBuffer(1.0, 0.0, 0.0);
     this.mvMatrix = mat4.create();
@@ -64,75 +77,6 @@ MeshDebug.prototype.init = function()
 
     mat4.perspective(this.pMatrix, 70.0, this.gl.drawingBufferWidth / this.gl.drawingBufferHeight, 0.1, 100.0);
     mat4.translate(this.pMatrix, this.pMatrix, [0, 0, -32]);
-}
-
-/*
- * Create a shader.
- *
- * @param type Type of the shader
- * @param source Source code of the shader
- *
- * @return A shader
- */
-MeshDebug.prototype.createShader = function(type, source)
-{
-    var gl = this.gl;
-    assert(gl, "Invalid WebGL context");
-
-    var shader = gl.createShader(type);
-
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-
-    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-
-    if(!success)
-    {
-        var log = gl.getShaderInfoLog(shader);
-        //throw "Failed to compile shader\nCODE:\n" + shaderCode + "\nLOG:\n" + log;
-        throw "Failed to compile shader\nLOG:\n" + log;
-    }
-
-    return shader;
-}
-
-/*
- * Create a program.
- *
- * @param vertexSource Source code of the vertex shader
- * @param fragmentSource Source code of the fragment shader
- *
- * @return A program
- */
-MeshDebug.prototype.createProgram = function(vertexSource, fragmentSource)
-{
-    var gl = this.gl;
-    assert(gl, "Invalid WebGL context");
-
-    var program = gl.createProgram();
-
-    gl.attachShader(program, this.createShader(gl.VERTEX_SHADER, vertexSource));
-    gl.attachShader(program, this.createShader(gl.FRAGMENT_SHADER, fragmentSource));
-
-    gl.linkProgram(program);
-
-    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-    if(!success)
-    {
-        var log = gl.getProgramInfoLog(program);
-        throw "Failed to link program: " + log;
-    }
-
-    gl.useProgram(program);
-    {
-        program.vertexPositionAttr = gl.getAttribLocation(program, "vertexPosition");
-        program.vertexColorAttr    = gl.getAttribLocation(program, "vertexColor");
-        program.mvMatrixUniform    = gl.getUniformLocation(program, "mvMatrix");
-        program.pMatrixUniform     = gl.getUniformLocation(program, "pMatrix");
-    }
-    gl.useProgram(null);
-
-    return program;
 }
 
 /*
@@ -168,6 +112,7 @@ MeshDebug.prototype.createVertexPositionBuffer = function()
 
     return vertexPositionBuffer;
 }
+
 /*
  * Create a vertex buffer containing the color of the vertices of the triangles.
  *
@@ -291,3 +236,4 @@ MeshDebug.prototype.draw = function(pos, scale)
     //}
     //gl.bindBuffer(gl.FRAMEBUFFER, null);
 }
+
